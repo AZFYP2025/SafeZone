@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 def initialize_firebase():
     try:
         cred = credentials.Certificate("firebase-credentials.json")
-        firebase_admin.initialize_app(cred, {"databaseURL": "https://safezone-660a9-default-rtdb.firebaseio.com/"})
+        firebase_admin.initialize_app(cred, {"databaseURL": "https://safezone-660a9.firebaseio.com/"})
         logging.info("Firebase initialized successfully.")
     except Exception as e:
         logging.error(f"Error initializing Firebase: {e}")
@@ -29,8 +29,8 @@ RANGE_NAME = "Sheet1!A:D"
 # Initialize NLP tools
 def initialize_nlp():
     try:
-        stanza.download("ms")  # Download Malay language model
-        nlp = stanza.Pipeline("ms")
+        stanza.download("id")  # Use 'id' for Malay
+        nlp = stanza.Pipeline("id")
         logging.info("NLP pipeline initialized successfully.")
         return nlp
     except Exception as e:
