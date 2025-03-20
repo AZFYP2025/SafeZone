@@ -12,7 +12,7 @@ nltk.download("stopwords")
 
 # 🔥 Initialize Firebase
 cred = credentials.Certificate("firebase-credentials.json")
-firebase_admin.initialize_app(cred, {"databaseURL": "https://console.firebase.google.com/u/0/project/safezone-660a9/database/safezone-660a9-default-rtdb/data"})
+firebase_admin.initialize_app(cred, {"databaseURL": "https://safezone-660a9.firebaseio.com/"})
 
 # 📊 Google Sheets API Setup
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
