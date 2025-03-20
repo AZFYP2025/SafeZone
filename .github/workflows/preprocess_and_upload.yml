@@ -24,13 +24,19 @@ jobs:
           pip install pandas firebase-admin google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client stanza
 
       - name: Download Stanza Model
-        run: python -c "import stanza; stanza.download('id')"  # Ensure Malay NLP model is downloaded
+        run: python -c "import stanza; stanza.download('id')"  # Use 'id' for Malay
 
       - name: Download Firebase Credentials
-        run: echo "${{ secrets.FIREBASE_CREDENTIALS }}" > firebase-credentials.json
+        run: |
+          echo '${{ secrets.FIREBASE_CREDENTIALS }}' > firebase-credentials.json
+
+      - name: Verify Firebase Credentials
+        run: |
+          cat firebase-credentials.json
 
       - name: Download Google Sheets Credentials
-        run: echo "${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}" > google-credentials.json
+        run: |
+          echo '${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}' > google-credentials.json
 
       - name: Run Preprocessing & Upload Script
         run: python preprocess_and_upload.py
