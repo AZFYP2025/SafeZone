@@ -24,7 +24,7 @@ def initialize_firebase():
 # Google Sheets API Setup
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 SHEET_ID = "1CNo8eLCASEfd7ktOgiUrzT8KBkAWhW5sPON1BITBKvM"
-RANGE_NAME = "SafeZone!A:D"
+RANGE_NAME = "SafeZone!A:H"
 
 # Initialize NLP tools
 def initialize_nlp():
