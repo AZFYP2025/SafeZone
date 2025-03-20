@@ -2,7 +2,7 @@ name: Fetch & Process Crime Data
 
 on:
   schedule:
-    - cron: "0 0 * * 1"
+    - cron: "0 0 * * 1"  # Runs every Monday at midnight UTC
   workflow_dispatch:  # Allows manual trigger
 
 jobs:
@@ -20,7 +20,11 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install pandas firebase-admin google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client nltk
+          pip install --upgrade pip
+          pip install pandas firebase-admin google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client nltk stanza
+
+      - name: Download Stanza Model
+        run: python -c "import stanza; stanza.download('ms')"  # Ensure Malay NLP model is downloaded
 
       - name: Download Firebase Credentials
         run: echo "${{ secrets.FIREBASE_CREDENTIALS }}" > firebase-credentials.json
