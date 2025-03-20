@@ -50,8 +50,9 @@ def fetch_google_sheets():
             logging.warning("No data found in Google Sheets.")
             return pd.DataFrame()
         
-        # Convert to DataFrame
+        # Convert to DataFrame and select only the required columns
         df = pd.DataFrame(values[1:], columns=values[0])
+        df = df[["Date (GMT)", "Main Topic", "Tweet Text"]]  # Select only the required columns
         logging.info(f"Fetched {len(df)} rows from Google Sheets.")
         return df
     except Exception as e:
@@ -70,24 +71,10 @@ def preprocess_text(text):
         logging.error(f"Error preprocessing text: {e}")
         return text
 
-# Categorize crime based on text (dummy implementation)
-def categorize_crime(text):
-    try:
-        # Dummy logic for categorization (replace with actual logic)
-        if "curi" in text.lower():
-            return "Theft", "Petty Theft"
-        elif "rompak" in text.lower():
-            return "Robbery", "Armed Robbery"
-        else:
-            return "Other", "Unknown"
-    except Exception as e:
-        logging.error(f"Error categorizing crime: {e}")
-        return "Other", "Unknown"
-
 # Generate Unique Row ID
 def generate_row_id(row):
     try:
-        unique_string = f"{row['Timestamp']}-{row['Tweet Text']}".encode('utf-8')
+        unique_string = f"{row['Date (GMT)']}-{row['Tweet Text']}".encode('utf-8')
         return hashlib.md5(unique_string).hexdigest()
     except Exception as e:
         logging.error(f"Error generating row ID: {e}")
@@ -102,6 +89,16 @@ def extract_location(text, nlp):
     except Exception as e:
         logging.error(f"Error extracting location: {e}")
         return "Unknown"
+
+# Map Malay crime terms to Type and Category
+def map_malay_to_type_and_category(topic):
+    topic = topic.lower()  # Ensure case insensitivity
+    if topic in ["pencuri", "pencurian", "curi", "rompak", "merompak", "rompakan"]:
+        return "Property", topic  # Type is the Malay term, Category is "Property"
+    elif topic in ["rogol", "perogol", "merogol"]:
+        return "Assault", topic  # Type is the Malay term, Category is "Assault"
+    else:
+        return "Other", "Unknown"  # Default for unknown terms
 
 # Process and Upload Data
 def process_and_upload():
@@ -132,7 +129,7 @@ def process_and_upload():
         # Process new rows
         new_df = pd.DataFrame(new_rows)
         new_df["Cleaned Text"] = new_df["Tweet Text"].apply(preprocess_text)
-        new_df[["Crime Category", "Crime Type"]] = new_df["Cleaned Text"].apply(lambda x: pd.Series(categorize_crime(x)))
+        new_df[["Category", "Type"]] = new_df["Main Topic"].apply(lambda x: pd.Series(map_malay_to_type_and_category(x)))
         new_df[["State", "District"]] = new_df["Tweet Text"].apply(lambda x: pd.Series(extract_location(x, nlp)))
 
         # Upload data to Firebase
@@ -145,9 +142,9 @@ def process_and_upload():
                 crime_data = {
                     "state": row["State"],
                     "district": row["District"],
-                    "category": row["Crime Category"],
-                    "type": row["Crime Type"],
-                    "date": row["Timestamp"]
+                    "category": row["Category"],  # "Assault" or "Property"
+                    "type": row["Type"],  # Malay term (e.g., "pencuri", "rogol")
+                    "date": row["Date (GMT)"]
                 }
                 batch[row_id] = crime_data
                 processed_ids[row_id] = True  # Mark as processed
