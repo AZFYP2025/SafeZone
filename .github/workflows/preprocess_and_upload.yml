@@ -33,4 +33,4 @@ jobs:
         run: echo "${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}" > google-credentials.json
 
       - name: Run Preprocessing & Upload Script
-        run: python script_name.py  # Replace with the actual script name
+        run: python preprocess_and_upload.py
