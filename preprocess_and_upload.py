@@ -53,8 +53,12 @@ def fetch_google_sheets():
                 logging.warning("No data found in Google Sheets.")
                 return pd.DataFrame()
 
+            # Convert to DataFrame and select only the required columns
             df = pd.DataFrame(values[1:], columns=values[0])
+            df = df[["Date (GMT)", "Main Topic", "Tweet Text"]]  # Select only the required columns
             logging.info(f"Fetched {len(df)} rows from Google Sheets.")
+            logging.info(f"Columns in DataFrame: {df.columns.tolist()}")  # Log column names
+            logging.info(f"First row of data: {df.iloc[0].to_dict()}")  # Log first row of data
             return df
 
         except HttpError as e:
@@ -62,6 +66,14 @@ def fetch_google_sheets():
             if attempt < retries - 1:
                 time.sleep(5)  # Wait before retrying
             else:
+                logging.error("All retry attempts failed. Returning empty DataFrame.")
+                return pd.DataFrame()  # Return empty DataFrame if all retries fail
+        except Exception as e:
+            logging.error(f"Unexpected error fetching data from Google Sheets (attempt {attempt + 1}): {e}")
+            if attempt < retries - 1:
+                time.sleep(5)  # Wait before retrying
+            else:
+                logging.error("All retry attempts failed. Returning empty DataFrame.")
                 return pd.DataFrame()  # Return empty DataFrame if all retries fail
 
 # Preprocess text (clean and normalize)
