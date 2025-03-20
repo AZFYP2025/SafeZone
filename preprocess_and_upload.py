@@ -40,9 +40,6 @@ def preprocess_text(text):
     text = text.lower()
     text = re.sub(r'[^a-zA-Z0-9\s]', '', text)  # Remove special characters
 
-    # Convert Malay to English using Google Translate
-    translated_text = translator.translate(text, src="ms", dest="en").text
-
     # Stanza NLP processing (Malay)
     doc = nlp(text)
     words = [word.text for sentence in doc.sentences for word in sentence.words]
@@ -55,13 +52,9 @@ def preprocess_text(text):
 # 📌 Crime Categorization
 def categorize_crime(text):
     crime_dict = {
-    "violent": [
-        "murder", "homicide", "kill", "killing", "rape", "violence", "abduction","kidnap", "kidnapping"
-    ],
-    "property": [
-        "burglary", "break-in", "trespass", "robbery", "armed robbery"
-    ]
-}
+        "violent": ["membunuh", "bunuh", "pembunuhan", "rogol", "merogol", "serangan", "pukul"],
+        "property": ["curi", "mencuri", "rompak", "merompak", "rompakan"]
+    }
     
     text = text.lower()
     for category, keywords in crime_dict.items():
