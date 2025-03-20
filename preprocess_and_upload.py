@@ -16,7 +16,7 @@ firebase_admin.initialize_app(cred, {"databaseURL": "https://safezone-660a9.fire
 
 # 📊 Google Sheets API Setup
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-SHEET_ID = "your_google_sheet_id"
+SHEET_ID = "1CNo8eLCASEfd7ktOgiUrzT8KBkAWhW5sPON1BITBKvM"
 RANGE_NAME = "Sheet1!A:D"  # Adjust range as needed
 
 def fetch_google_sheets():
