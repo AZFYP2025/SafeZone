@@ -21,42 +21,68 @@ stanza.download("ms")  # Download Malay NLP model
 nlp = stanza.Pipeline("ms")
 stemmer = StemmerFactory().create_stemmer()
 
-# 📌 Malaysian States and Districts
 malaysian_states = [
-    "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang",
-    "Perak", "Perlis", "Pulau Pinang", "Sabah", "Sarawak", "Selangor",
-    "Terengganu", "W.P. Kuala Lumpur"
+    "johor", "kedah", "kelantan", "melaka", "negeri sembilan", "pahang",
+    "perak", "perlis", "pulau pinang", "sabah", "sarawak", "selangor",
+    "terengganu", "w.p. kuala lumpur"
 ]
 
 malaysian_districts = [
-    "Batu Pahat", "Iskandar Puteri", "Johor Bahru Selatan", "Johor Bahru Utara", "Kluang",
-    "Kota Tinggi", "Kulaijaya", "Ledang", "Mersing", "Muar", "Nusajaya", "Pontian", "Segamat", "Seri Alam",  # Johor
-    "Baling", "Bandar Bharu", "Kota Setar", "Kuala Muda", "Kubang Pasu", "Kulim",
-    "Langkawi", "Padang Terap", "Pendang", "Sik", "Yan",  # Kedah
-    "Bachok", "Gua Musang", "Jeli", "Kota Bharu", "Kuala Krai", "Machang", "Pasir Mas",
-    "Pasir Puteh", "Tanah Merah", "Tumpat",  # Kelantan
-    "Alor Gajah", "Jasin", "Melaka Tengah",  # Melaka
-    "Jelebu", "Jempol", "Kuala Pilah", "Nilai", "Port Dickson", "Rembau", "Seremban", "Tampin",  # Negeri Sembilan
-    "Bentong", "Bera", "Cameron Highland", "Jerantut", "Kuala Lipis", "Kuantan",
-    "Maran", "Pekan", "Raub", "Rompin", "Temerloh",  # Pahang
-    "Batu Gajah", "Gerik", "Hilir Perak", "Ipoh", "Kampar", "Kerian", "Kuala Kangsar",
-    "Manjung", "Pengkalan Hulu", "Perak Tengah", "Selama", "Sungai Siput", "Taiping",
-    "Tanjong Malim", "Tapah",  # Perak
-    "Arau", "Kangar", "Padang Besar",  # Perlis
-    "Barat Daya", "Seberang Perai Selatan", "Seberang Perai Tengah", "Seberang Perai Utara", "Timur Laut",  # Pulau Pinang
-    "Beaufort", "Beluran", "Keningau", "Kota Belud", "Kota Kinabalu", "Kinabatangan",
-    "Kota Marudu", "Kudat", "Kunak", "Lahad Datu", "Papar", "Penampang", "Ranau",
-    "Sandakan", "Semporna", "Sipitang", "Tawau", "Tenom", "Tuaran",  # Sabah
-    "Bau", "Belaga", "Betong", "Bintulu", "Dalat", "Julau", "Kanowit", "Kapit",
-    "Kota Samarahan", "Kuching", "Lawas", "Limbang", "Lubok Antu", "Lundu", "Marudi",
-    "Matu Daro", "Meradong", "Miri", "Mukah", "Padawan", "Saratok", "Sarikei",
-    "Serian", "Sibu", "Simunjan", "Song", "Sri Aman", "Tatau",  # Sarawak
-    "Ampang Jaya", "Gombak", "Hulu Selangor", "Kajang", "Klang Selatan", "Klang Utara",
-    "Kuala Langat", "Kuala Selangor", "Petaling Jaya", "Sabak Bernam", "Sepang",
-    "Serdang", "Sg. Buloh", "Shah Alam", "Subang Jaya",  # Selangor
-    "Besut", "Dungun", "Hulu Terengganu", "Kemaman", "Kuala Terengganu", "Marang", "Setiu",  # Terengganu
-    "Brickfields", "Cheras", "Dang Wangi", "Sentul", "Wangsa Maju", "W.P. Putrajaya"  # W.P. Kuala Lumpur
+    "batu pahat", "iskandar puteri", "johor bahru", "johor bahru", "kluang",
+    "kota tinggi", "kulaijaya", "ledang", "mersing", "muar", "nusajaya", "pontian", "segamat", "seri alam",  # Johor
+    "baling", "bandar bharu", "kota setar", "kuala muda", "kubang pasu", "kulim",
+    "langkawi", "padang terap", "pendang", "sik", "yan",  # Kedah
+    "bachok", "gua musang", "jeli", "kota bharu", "kuala krai", "machang", "pasir mas",
+    "pasir puteh", "tanah merah", "tumpat",  # Kelantan
+    "alor gajah", "jasin", "melaka tengah",  # Melaka
+    "jelebu", "jempol", "kuala pilah", "nilai", "port dickson", "rembau", "seremban", "tampin",  # Negeri Sembilan
+    "bentong", "bera", "cameron highland", "jerantut", "kuala lipis", "kuantan",
+    "maran", "pekan", "raub", "rompin", "temerloh",  # Pahang
+    "batu gajah", "gerik", "hilir perak", "ipoh", "kampar", "kerian", "kuala kangsar",
+    "manjung", "pengkalan hulu", "perak tengah", "selama", "sungai siput", "taiping",
+    "tanjong malim", "tapah",  # Perak
+    "arau", "kangar", "padang besar",  # Perlis
+    "barat daya", "seberang perai", "timur laut",  # Pulau Pinang
+    "beaufort", "beluran", "keningau", "kota belud", "kota kinabalu", "kinabatangan",
+    "kota marudu", "kudat", "kunak", "lahad datu", "papar", "penampang", "ranau",
+    "sandakan", "semporna", "sipitang", "tawau", "tenom", "tuaran",  # Sabah
+    "bau", "belaga", "betong", "bintulu", "dalat", "julau", "kanowit", "kapit",
+    "kota samarahan", "kuching", "lawas", "limbang", "lubok antu", "lundu", "marudi",
+    "matu daro", "meradong", "miri", "mukah", "padawan", "saratok", "sarikei",
+    "serian", "sibu", "simunjan", "song", "sri aman", "tatau",  # Sarawak
+    "ampang jaya", "gombak", "hulu selangor", "kajang", "klang",
+    "kuala langat", "kuala selangor", "petaling jaya", "sabak bernam", "sepang",
+    "serdang", "sg. buloh", "shah alam", "subang jaya",  # Selangor
+    "besut", "dungun", "hulu terengganu", "kemaman", "kuala terengganu", "marang", "setiu",  # Terengganu
+    "brickfields", "cheras", "dang wangi", "sentul", "wangsa maju", "w.p. putrajaya"  # W.P. Kuala Lumpur
 ]
+
+special_cases = {
+    "kl": "w.p. kuala lumpur",
+    "kuala lumpur": "w.p. kuala lumpur",
+    "putrajaya": "w.p. putrajaya",
+    "jb": "johor bahru",
+    "pj": "petaling jaya",
+    "sg buloh": "sg. buloh",
+    "sungai buloh": "sg.buloh",
+    "n9": "negeri sembilan"
+}
+
+def normalize_location(input_location):
+    input_location = input_location.lower().strip()  # Convert to lowercase and remove spaces
+    
+    if input_location in special_cases:
+        return special_cases[input_location].title()
+
+    if input_location in malaysian_states:
+        return input_location.title()  # Format properly
+    
+    if input_location in malaysian_districts:
+        return input_location.title()  # Format properly
+    
+    # Capitalize first letter of each word if not found
+    return input_location.title()
+
 
 # 📌 Extract State and District from Text
 def extract_location(text):
