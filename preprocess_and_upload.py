@@ -50,9 +50,22 @@ def fetch_google_sheets():
             logging.warning("No data found in Google Sheets.")
             return pd.DataFrame()
         
-        # Convert to DataFrame and select only the required columns
+        # Convert to DataFrame
         df = pd.DataFrame(values[1:], columns=values[0])
-        df = df[["Date (GMT)", "Main Topic", "Tweet Text"]]  # Select only the required columns
+
+        # 🔍 Debug: Check column names
+        logging.info(f"Fetched columns: {df.columns.tolist()}")
+
+        # Ensure required columns exist before selecting them
+        required_columns = ["Date (GMT)", "Main Topic", "Tweet Text"]
+        missing_columns = [col for col in required_columns if col not in df.columns]
+
+        if missing_columns:
+            logging.error(f"Missing columns: {missing_columns}")
+            return pd.DataFrame()  # Return empty if columns are missing
+
+        df = df[required_columns]  # Now it's safe to select
+
         logging.info(f"Fetched {len(df)} rows from Google Sheets.")
         return df
     except Exception as e:
