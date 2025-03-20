@@ -25,24 +25,37 @@ stemmer = StemmerFactory().create_stemmer()
 malaysian_states = [
     "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang",
     "Perak", "Perlis", "Pulau Pinang", "Sabah", "Sarawak", "Selangor",
-    "Terengganu", "W.P. Kuala Lumpur", "W.P. Labuan", "W.P. Putrajaya"
+    "Terengganu", "W.P. Kuala Lumpur"
 ]
 
 malaysian_districts = [
-    "Johor Bahru", "Batu Pahat", "Muar", "Kluang", "Kota Tinggi", "Segamat",  # Johor
-    "Alor Setar", "Sungai Petani", "Kulim", "Baling", "Langkawi",  # Kedah
-    "Kota Bharu", "Pasir Mas", "Gua Musang", "Bachok", "Tumpat",  # Kelantan
-    "Melaka Tengah", "Alor Gajah", "Jasin",  # Melaka
-    "Seremban", "Port Dickson", "Jempol", "Rembau",  # Negeri Sembilan
-    "Kuantan", "Temerloh", "Bentong", "Jerantut", "Pekan",  # Pahang
-    "Ipoh", "Taiping", "Manjung", "Kuala Kangsar", "Batang Padang",  # Perak
-    "Kangar", "Arau", "Padang Besar",  # Perlis
-    "George Town", "Seberang Perai", "Balik Pulau",  # Pulau Pinang
-    "Kota Kinabalu", "Sandakan", "Tawau", "Lahad Datu", "Keningau",  # Sabah
-    "Kuching", "Miri", "Sibu", "Bintulu", "Limbang",  # Sarawak
-    "Shah Alam", "Petaling Jaya", "Klang", "Gombak", "Hulu Langat", "Sepang",  # Selangor
-    "Kuala Terengganu", "Dungun", "Marang", "Kemaman", "Besut",  # Terengganu
-    "Kuala Lumpur", "Labuan", "Putrajaya"  # WP
+    "Batu Pahat", "Iskandar Puteri", "Johor Bahru Selatan", "Johor Bahru Utara", "Kluang",
+    "Kota Tinggi", "Kulaijaya", "Ledang", "Mersing", "Muar", "Nusajaya", "Pontian", "Segamat", "Seri Alam",  # Johor
+    "Baling", "Bandar Bharu", "Kota Setar", "Kuala Muda", "Kubang Pasu", "Kulim",
+    "Langkawi", "Padang Terap", "Pendang", "Sik", "Yan",  # Kedah
+    "Bachok", "Gua Musang", "Jeli", "Kota Bharu", "Kuala Krai", "Machang", "Pasir Mas",
+    "Pasir Puteh", "Tanah Merah", "Tumpat",  # Kelantan
+    "Alor Gajah", "Jasin", "Melaka Tengah",  # Melaka
+    "Jelebu", "Jempol", "Kuala Pilah", "Nilai", "Port Dickson", "Rembau", "Seremban", "Tampin",  # Negeri Sembilan
+    "Bentong", "Bera", "Cameron Highland", "Jerantut", "Kuala Lipis", "Kuantan",
+    "Maran", "Pekan", "Raub", "Rompin", "Temerloh",  # Pahang
+    "Batu Gajah", "Gerik", "Hilir Perak", "Ipoh", "Kampar", "Kerian", "Kuala Kangsar",
+    "Manjung", "Pengkalan Hulu", "Perak Tengah", "Selama", "Sungai Siput", "Taiping",
+    "Tanjong Malim", "Tapah",  # Perak
+    "Arau", "Kangar", "Padang Besar",  # Perlis
+    "Barat Daya", "Seberang Perai Selatan", "Seberang Perai Tengah", "Seberang Perai Utara", "Timur Laut",  # Pulau Pinang
+    "Beaufort", "Beluran", "Keningau", "Kota Belud", "Kota Kinabalu", "Kinabatangan",
+    "Kota Marudu", "Kudat", "Kunak", "Lahad Datu", "Papar", "Penampang", "Ranau",
+    "Sandakan", "Semporna", "Sipitang", "Tawau", "Tenom", "Tuaran",  # Sabah
+    "Bau", "Belaga", "Betong", "Bintulu", "Dalat", "Julau", "Kanowit", "Kapit",
+    "Kota Samarahan", "Kuching", "Lawas", "Limbang", "Lubok Antu", "Lundu", "Marudi",
+    "Matu Daro", "Meradong", "Miri", "Mukah", "Padawan", "Saratok", "Sarikei",
+    "Serian", "Sibu", "Simunjan", "Song", "Sri Aman", "Tatau",  # Sarawak
+    "Ampang Jaya", "Gombak", "Hulu Selangor", "Kajang", "Klang Selatan", "Klang Utara",
+    "Kuala Langat", "Kuala Selangor", "Petaling Jaya", "Sabak Bernam", "Sepang",
+    "Serdang", "Sg. Buloh", "Shah Alam", "Subang Jaya",  # Selangor
+    "Besut", "Dungun", "Hulu Terengganu", "Kemaman", "Kuala Terengganu", "Marang", "Setiu",  # Terengganu
+    "Brickfields", "Cheras", "Dang Wangi", "Sentul", "Wangsa Maju", "W.P. Putrajaya"  # W.P. Kuala Lumpur
 ]
 
 # 📌 Extract State and District from Text
