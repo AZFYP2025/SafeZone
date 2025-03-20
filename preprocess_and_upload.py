@@ -82,7 +82,6 @@ def process_and_upload():
             "category": row["Crime Category"],
             "type": row["Main Topic"],
             "original_text": row["Tweet Text"],  
-            "cleaned_text": row["Cleaned Text"]  
         })
 
     print("✅ Data uploaded to Firebase!")
