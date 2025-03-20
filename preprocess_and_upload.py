@@ -12,7 +12,7 @@ nltk.download("stopwords")
 
 # 🔥 Initialize Firebase
 cred = credentials.Certificate("firebase-credentials.json")
-firebase_admin.initialize_app(cred, {"databaseURL": "https://your-project-id.firebaseio.com/"})
+firebase_admin.initialize_app(cred, {"databaseURL": "https://console.firebase.google.com/u/0/project/safezone-660a9/database/safezone-660a9-default-rtdb/data"})
 
 # 📊 Google Sheets API Setup
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
@@ -37,7 +37,7 @@ def clean_text(text):
 
 def categorize_crime(text):
     crime_dict = {
-        "violent": ["murder", "assault", "robbery", "rape"],
+        "assault": ["murder", "assault", "robbery", "rape"],
         "property": ["theft", "burglary", "fraud", "vandalism"]
     }
     text = text.lower()
