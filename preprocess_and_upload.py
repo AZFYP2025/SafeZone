@@ -3,7 +3,6 @@ from firebase_admin import credentials, db
 import pandas as pd
 import re
 import stanza  # NLP for Malay
-from googletrans import Translator
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
@@ -20,19 +19,54 @@ RANGE_NAME = "Sheet1!A:D"
 # 🔎 Initialize NLP tools
 stanza.download("ms")  # Download Malay NLP model
 nlp = stanza.Pipeline("ms")
-translator = Translator()
 stemmer = StemmerFactory().create_stemmer()
 
-# 📌 Fetch Data from Google Sheets
-def fetch_google_sheets():
-    creds = service_account.Credentials.from_service_account_file("google-sheets-credentials.json", scopes=SCOPES)
-    service = build('sheets', 'v4', credentials=creds)
-    sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId=SHEET_ID, range=RANGE_NAME).execute()
-    values = result.get('values', [])
-    return pd.DataFrame(values[1:], columns=values[0]) if values else pd.DataFrame()
+# 📌 Malaysian States and Districts
+malaysian_states = [
+    "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang",
+    "Perak", "Perlis", "Pulau Pinang", "Sabah", "Sarawak", "Selangor",
+    "Terengganu", "W.P. Kuala Lumpur", "W.P. Labuan", "W.P. Putrajaya"
+]
 
-# 🔎 NLP Preprocessing
+malaysian_districts = [
+    "Johor Bahru", "Batu Pahat", "Muar", "Kluang", "Kota Tinggi", "Segamat",  # Johor
+    "Alor Setar", "Sungai Petani", "Kulim", "Baling", "Langkawi",  # Kedah
+    "Kota Bharu", "Pasir Mas", "Gua Musang", "Bachok", "Tumpat",  # Kelantan
+    "Melaka Tengah", "Alor Gajah", "Jasin",  # Melaka
+    "Seremban", "Port Dickson", "Jempol", "Rembau",  # Negeri Sembilan
+    "Kuantan", "Temerloh", "Bentong", "Jerantut", "Pekan",  # Pahang
+    "Ipoh", "Taiping", "Manjung", "Kuala Kangsar", "Batang Padang",  # Perak
+    "Kangar", "Arau", "Padang Besar",  # Perlis
+    "George Town", "Seberang Perai", "Balik Pulau",  # Pulau Pinang
+    "Kota Kinabalu", "Sandakan", "Tawau", "Lahad Datu", "Keningau",  # Sabah
+    "Kuching", "Miri", "Sibu", "Bintulu", "Limbang",  # Sarawak
+    "Shah Alam", "Petaling Jaya", "Klang", "Gombak", "Hulu Langat", "Sepang",  # Selangor
+    "Kuala Terengganu", "Dungun", "Marang", "Kemaman", "Besut",  # Terengganu
+    "Kuala Lumpur", "Labuan", "Putrajaya"  # WP
+]
+
+# 📌 Extract State and District from Text
+def extract_location(text):
+    text = text.lower()
+
+    detected_state = "Unknown State"
+    detected_district = "Unknown District"
+
+    # Check for states in the text
+    for state in malaysian_states:
+        if state.lower() in text:
+            detected_state = state
+            break  # Stop if found
+
+    # Check for districts in the text
+    for district in malaysian_districts:
+        if district.lower() in text:
+            detected_district = district
+            break  # Stop if found
+
+    return detected_state, detected_district
+
+# 📌 NLP Preprocessing
 def preprocess_text(text):
     if not isinstance(text, str):
         return ""
@@ -49,18 +83,37 @@ def preprocess_text(text):
 
     return " ".join(words)
 
-# 📌 Crime Categorization
+# 📌 Extract Crime Type and Category
 def categorize_crime(text):
     crime_dict = {
-        "violent": ["membunuh", "bunuh", "pembunuhan", "rogol", "merogol", "serangan", "pukul"],
+        "assault": ["membunuh", "bunuh", "pembunuhan", "rogol", "merogol", "serangan", "pukul"],
         "property": ["curi", "mencuri", "rompak", "merompak", "rompakan"]
     }
-    
+
+    crime_types = {
+        "murder": ["membunuh", "bunuh", "pembunuhan"],
+        "theft": ["curi", "mencuri"],
+        "robbery": ["rompak", "merompak", "rompakan"],
+        "rape": ["rogol", "merogol"],
+        "assault": ["serangan", "pukul"]
+    }
+
     text = text.lower()
-    for category, keywords in crime_dict.items():
+
+    category = "unknown"
+    crime_type = "unknown"
+
+    for cat, keywords in crime_dict.items():
         if any(word in text for word in keywords):
-            return category
-    return "Unknown Crime"
+            category = cat
+            break
+
+    for ctype, keywords in crime_types.items():
+        if any(word in text for word in keywords):
+            crime_type = ctype
+            break
+
+    return category, crime_type
 
 # 🔥 Process Data and Upload to Firebase
 def process_and_upload():
@@ -72,16 +125,18 @@ def process_and_upload():
         return
 
     df["Cleaned Text"] = df["Tweet Text"].apply(preprocess_text)
-    df["Crime Category"] = df["Cleaned Text"].apply(categorize_crime)
+    df[["Crime Category", "Crime Type"]] = df["Cleaned Text"].apply(lambda x: pd.Series(categorize_crime(x)))
+    df[["State", "District"]] = df["Tweet Text"].apply(lambda x: pd.Series(extract_location(x)))
 
     ref = db.reference("crime_data")
 
     for _, row in df.iterrows():
         ref.push({
-            "timestamp": row["Timestamp"],
+            "state": row["State"],
+            "district": row["District"],
             "category": row["Crime Category"],
-            "type": row["Main Topic"],
-            "original_text": row["Tweet Text"],  
+            "type": row["Crime Type"],
+            "date": row["Timestamp"]
         })
 
     print("✅ Data uploaded to Firebase!")
