@@ -1,0 +1,32 @@
+name: Fetch & Process Crime Data
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # Runs every hour
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  preprocess-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: |
+          pip install pandas firebase-admin google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client nltk
+
+      - name: Download Firebase Credentials
+        run: echo "${{ secrets.FIREBASE_CREDENTIALS }}" > firebase-credentials.json
+
+      - name: Download Google Sheets Credentials
+        run: echo "${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}" > google-sheets-credentials.json
+
+      - name: Run Preprocessing & Upload Script
+        run: python preprocess_and_upload.py
