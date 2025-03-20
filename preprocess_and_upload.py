@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 def initialize_firebase():
     try:
         cred = credentials.Certificate("firebase-credentials.json")
-        firebase_admin.initialize_app(cred, {"databaseURL": "https://safezone-660a9.firebaseio.com/"})
+        firebase_admin.initialize_app(cred, {"databaseURL": "https://safezone-660a9-default-rtdb.asia-southeast1.firebasedatabase.app/"})
         logging.info("Firebase initialized successfully.")
     except Exception as e:
         logging.error(f"Error initializing Firebase: {e}")
