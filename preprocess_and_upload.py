@@ -39,38 +39,30 @@ def initialize_nlp():
 
 # Fetch data from Google Sheets
 def fetch_google_sheets():
-    try:
-        creds = service_account.Credentials.from_service_account_file("google-credentials.json", scopes=SCOPES)
-        service = build("sheets", "v4", credentials=creds)
-        sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=SHEET_ID, range=RANGE_NAME).execute()
-        values = result.get("values", [])
-        
-        if not values:
-            logging.warning("No data found in Google Sheets.")
-            return pd.DataFrame()
-        
-        # Convert to DataFrame
-        df = pd.DataFrame(values[1:], columns=values[0])
+    creds = service_account.Credentials.from_service_account_file("google-credentials.json", scopes=SCOPES)
+    service = build("sheets", "v4", credentials=creds)
+    sheet = service.spreadsheets()
 
-        # 🔍 Debug: Check column names
-        logging.info(f"Fetched columns: {df.columns.tolist()}")
+    retries = 3  # Number of retry attempts
+    for attempt in range(retries):
+        try:
+            result = sheet.values().get(spreadsheetId=SHEET_ID, range=RANGE_NAME).execute()
+            values = result.get("values", [])
 
-        # Ensure required columns exist before selecting them
-        required_columns = ["Date (GMT)", "Main Topic", "Tweet Text"]
-        missing_columns = [col for col in required_columns if col not in df.columns]
+            if not values:
+                logging.warning("No data found in Google Sheets.")
+                return pd.DataFrame()
 
-        if missing_columns:
-            logging.error(f"Missing columns: {missing_columns}")
-            return pd.DataFrame()  # Return empty if columns are missing
+            df = pd.DataFrame(values[1:], columns=values[0])
+            logging.info(f"Fetched {len(df)} rows from Google Sheets.")
+            return df
 
-        df = df[required_columns]  # Now it's safe to select
-
-        logging.info(f"Fetched {len(df)} rows from Google Sheets.")
-        return df
-    except Exception as e:
-        logging.error(f"Error fetching data from Google Sheets: {e}")
-        return pd.DataFrame()
+        except HttpError as e:
+            logging.error(f"Error fetching data from Google Sheets (attempt {attempt + 1}): {e}")
+            if attempt < retries - 1:
+                time.sleep(5)  # Wait before retrying
+            else:
+                return pd.DataFrame()  # Return empty DataFrame if all retries fail
 
 # Preprocess text (clean and normalize)
 def preprocess_text(text):
