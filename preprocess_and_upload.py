@@ -10,6 +10,52 @@ import re
 from googleapiclient.errors import HttpError  # Import HttpError
 import time  # Import time for retry delay
 
+# Malaysian states, districts, and special cases
+MALAYSIAN_STATES = [
+    "johor", "kedah", "kelantan", "melaka", "negeri sembilan", "pahang",
+    "perak", "perlis", "pulau pinang", "sabah", "sarawak", "selangor",
+    "terengganu", "w.p. kuala lumpur", "w.p. putrajaya"
+]
+
+MALAYSIAN_DISTRICTS = [
+    "batu pahat", "iskandar puteri", "johor bahru selatan", "johor bahru utara", "kluang",
+    "kota tinggi", "kulaijaya", "ledang", "mersing", "muar", "nusajaya", "pontian", "segamat", "seri alam",  # Johor
+    "baling", "bandar bharu", "kota setar", "kuala muda", "kubang pasu", "kulim",
+    "langkawi", "padang terap", "pendang", "sik", "yan",  # Kedah
+    "bachok", "gua musang", "jeli", "kota bharu", "kuala krai", "machang", "pasir mas",
+    "pasir puteh", "tanah merah", "tumpat",  # Kelantan
+    "alor gajah", "jasin", "melaka tengah",  # Melaka
+    "jelebu", "jempol", "kuala pilah", "nilai", "port dickson", "rembau", "seremban", "tampin",  # Negeri Sembilan
+    "bentong", "bera", "cameron highland", "jerantut", "kuala lipis", "kuantan",
+    "maran", "pekan", "raub", "rompin", "temerloh",  # Pahang
+    "batu gajah", "gerik", "hilir perak", "ipoh", "kampar", "kerian", "kuala kangsar",
+    "manjung", "pengkalan hulu", "perak tengah", "selama", "sungai siput", "taiping",
+    "tanjong malim", "tapah",  # Perak
+    "arau", "kangar", "padang besar",  # Perlis
+    "barat daya", "seberang perai selatan", "seberang perai tengah", "seberang perai utara", "timur laut",  # Pulau Pinang
+    "beaufort", "beluran", "keningau", "kota belud", "kota kinabalu", "kinabatangan",
+    "kota marudu", "kudat", "kunak", "lahad datu", "papar", "penampang", "ranau",
+    "sandakan", "semporna", "sipitang", "tawau", "tenom", "tuaran",  # Sabah
+    "bau", "belaga", "betong", "bintulu", "dalat", "julau", "kanowit", "kapit",
+    "kota samarahan", "kuching", "lawas", "limbang", "lubok antu", "lundu", "marudi",
+    "matu daro", "meradong", "miri", "mukah", "padawan", "saratok", "sarikei",
+    "serian", "sibu", "simunjan", "song", "sri aman", "tatau",  # Sarawak
+    "ampang jaya", "gombak", "hulu selangor", "kajang", "klang selatan", "klang utara",
+    "kuala langat", "kuala selangor", "petaling jaya", "sabak bernam", "sepang",
+    "serdang", "sg. buloh", "shah alam", "subang jaya",  # Selangor
+    "besut", "dungun", "hulu terengganu", "kemaman", "kuala terengganu", "marang", "setiu",  # Terengganu
+    "brickfields", "cheras", "dang wangi", "sentul", "wangsa maju"  # W.P. Kuala Lumpur
+]
+
+SPECIAL_CASES = {
+    "kl": "w.p. kuala lumpur",
+    "kuala lumpur": "w.p. kuala lumpur",
+    "putrajaya": "w.p. putrajaya"
+}
+
+# Combine all locations into a single list for easier lookup
+MALAYSIAN_LOCATIONS = MALAYSIAN_STATES + MALAYSIAN_DISTRICTS
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -124,18 +170,36 @@ def generate_row_id(row):
 # Extract State and District from Text using NLP
 def extract_location(text, nlp):
     try:
+        # 1️⃣ First, check for special cases (e.g., "kl" -> "w.p. kuala lumpur")
+        text_lower = text.lower()
+        for key, value in SPECIAL_CASES.items():
+            if key in text_lower:
+                return value, "Unknown"
+
+        # 2️⃣ Use regex to detect common location phrases (e.g., "di shah alam")
+        match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\s]+)", text_lower)
+        if match:
+            possible_location = match.group(2).strip()
+            for loc in MALAYSIAN_LOCATIONS:
+                if loc.lower() in possible_location.lower():
+                    return loc, "Unknown"  # Found a known location
+
+        # 3️⃣ If regex fails, use Stanza NLP
         doc = nlp(text)
-        locations = [ent.text for ent in doc.ents if ent.type == "GPE"]
+        locations = [ent.text for ent in doc.ents if ent.type == "GPE"]  # GPE = Geopolitical Entity
+
         if len(locations) >= 2:
             return locations[0], locations[1]  # State & District
         elif len(locations) == 1:
             return locations[0], "Unknown"  # State, No District
         else:
+            logging.warning(f"No location found in text: {text}")
             return "Unknown", "Unknown"  # Default case
+
     except Exception as e:
         logging.error(f"Error extracting location: {e}")
         return "Unknown", "Unknown"
-
+        
 # Map Malay crime terms to Type and Category
 def map_malay_to_type_and_category(topic):
     topic = topic.lower().strip()  # Ensure case insensitivity and remove extra spaces
