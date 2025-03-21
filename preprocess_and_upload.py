@@ -135,11 +135,11 @@ def extract_location(text, nlp):
 # Map Malay crime terms to Type and Category
 def map_malay_to_type_and_category(topic):
     topic = topic.lower().strip()  # Ensure case insensitivity and remove extra spaces
-    if topic in ["curi", "pencuri", "pencurian"]:
+    if topic in ["stealing"]:
         return "property", "theft"
-    elif topic in ["rogol", "perogol", "merogol"]:
+    elif topic in ["rape"]:
         return "assault", "rape"
-    elif topic in ["rompak", "merompak", "rompakan"]:
+    elif topic in ["robbery"]:
         return "property", "robbery"
     else:
         return "Other", "Unknown"  # Default for unknown terms
