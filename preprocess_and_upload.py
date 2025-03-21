@@ -40,6 +40,7 @@ def initialize_nlp():
         raise
 
 # Fetch data from Google Sheets
+# Fetch data from Google Sheets
 def fetch_google_sheets():
     creds = service_account.Credentials.from_service_account_file("google-credentials.json", scopes=SCOPES)
     service = build("sheets", "v4", credentials=creds)
@@ -64,6 +65,9 @@ def fetch_google_sheets():
 
             # Log unique values in the "Main Topic" column before mapping
             logging.info(f"Unique 'Main Topic' values before mapping: {df['Main Topic'].unique()}")
+
+            # Lowercase the "Main Topic" column before mapping
+            df["Main Topic"] = df["Main Topic"].str.lower()
 
             # Malay Crime Terms Mapping
             crime_mapping = {
