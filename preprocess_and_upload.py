@@ -62,6 +62,9 @@ def fetch_google_sheets():
             # Modify Date Format (Remove Time)
             df["Date (GMT)"] = pd.to_datetime(df["Date (GMT)"]).dt.date
 
+            # Log unique values in the "Main Topic" column before mapping
+            logging.info(f"Unique 'Main Topic' values before mapping: {df['Main Topic'].unique()}")
+
             # Malay Crime Terms Mapping
             crime_mapping = {
                 "curi": "stealing", "pencuri": "stealing", "pencurian": "stealing",
@@ -69,6 +72,9 @@ def fetch_google_sheets():
                 "rompak": "robbery", "merompak": "robbery", "rompakan": "robbery"
             }
             df["Main Topic"] = df["Main Topic"].replace(crime_mapping)
+
+            # Log unique values in the "Main Topic" column after mapping
+            logging.info(f"Unique 'Main Topic' values after mapping: {df['Main Topic'].unique()}")
 
             logging.info(f"Fetched {len(df)} rows from Google Sheets.")
             logging.info(f"Columns in DataFrame: {df.columns.tolist()}")  # Log column names
@@ -89,7 +95,7 @@ def fetch_google_sheets():
             else:
                 logging.error("All retry attempts failed. Returning empty DataFrame.")
                 return pd.DataFrame()  # Return empty DataFrame if all retries fail
-
+                
 # Preprocess text (clean and normalize)
 def preprocess_text(text):
     try:
@@ -128,11 +134,13 @@ def extract_location(text, nlp):
 
 # Map Malay crime terms to Type and Category
 def map_malay_to_type_and_category(topic):
-    topic = topic.lower()  # Ensure case insensitivity
-    if topic in ["pencuri", "pencurian", "curi", "rompak", "merompak", "rompakan"]:
-        return "Property", topic  # Type is the Malay term, Category is "Property"
+    topic = topic.lower().strip()  # Ensure case insensitivity and remove extra spaces
+    if topic in ["curi", "pencuri", "pencurian"]:
+        return "property", "theft"
     elif topic in ["rogol", "perogol", "merogol"]:
-        return "Assault", topic  # Type is the Malay term, Category is "Assault"
+        return "assault", "rape"
+    elif topic in ["rompak", "merompak", "rompakan"]:
+        return "property", "robbery"
     else:
         return "Other", "Unknown"  # Default for unknown terms
 
@@ -170,6 +178,10 @@ def process_and_upload():
         new_df[["Category", "Type"]] = new_df["Main Topic"].apply(lambda x: pd.Series(map_malay_to_type_and_category(x)))
         new_df[["State", "District"]] = new_df["Tweet Text"].apply(lambda x: extract_location(x, nlp)).apply(pd.Series)
 
+        # Log the processed DataFrame
+        logging.info(f"Processed DataFrame columns: {new_df.columns.tolist()}")
+        logging.info(f"Processed DataFrame first row: {new_df.iloc[0].to_dict()}")
+
         # Upload data to Firebase
         crime_ref = db.reference("crime_data")
         batch = {}
@@ -195,7 +207,7 @@ def process_and_upload():
         logging.info(f"✅ Added {len(new_df)} new records to Firebase!")
     except Exception as e:
         logging.error(f"Error in process_and_upload: {e}")
-
+        
 # Main execution
 if __name__ == "__main__":
     try:
