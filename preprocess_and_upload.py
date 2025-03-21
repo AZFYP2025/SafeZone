@@ -177,12 +177,14 @@ def process_and_upload():
         for _, row in new_df.iterrows():
             row_id = generate_row_id(row)
             if row_id:
+                # Convert date to string
+                date_str = row["Date (GMT)"].isoformat()  # Convert date to ISO format string
                 crime_data = {
                     "state": row["State"],
                     "district": row["District"],
                     "category": row["Category"],  # "Assault" or "Property"
                     "type": row["Type"],  # Malay term (e.g., "pencuri", "rogol")
-                    "date": row["Date (GMT)"]
+                    "date": date_str  # Use the string representation of the date
                 }
                 batch[row_id] = crime_data
                 processed_ids[row_id] = True  # Mark as processed
