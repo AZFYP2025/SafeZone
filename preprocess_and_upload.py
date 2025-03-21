@@ -102,10 +102,15 @@ def extract_location(text, nlp):
     try:
         doc = nlp(text)
         locations = [ent.text for ent in doc.ents if ent.type == "GPE"]
-        return locations[0] if locations else "Unknown"
+        if len(locations) >= 2:
+            return locations[0], locations[1]  # State & District
+        elif len(locations) == 1:
+            return locations[0], "Unknown"  # State, No District
+        else:
+            return "Unknown", "Unknown"  # Default case
     except Exception as e:
         logging.error(f"Error extracting location: {e}")
-        return "Unknown"
+        return "Unknown", "Unknown"
 
 # Map Malay crime terms to Type and Category
 def map_malay_to_type_and_category(topic):
@@ -142,12 +147,15 @@ def process_and_upload():
         if not new_rows:
             logging.info("✅ No new data to process.")
             return
-
+            
+        test_location = extract_location(new_df["Tweet Text"].iloc[0], nlp)
+        print(f"Extracted Location Example: {test_location}")  # Should be a tuple (State, District)
+        
         # Process new rows
         new_df = pd.DataFrame(new_rows)
         new_df["Cleaned Text"] = new_df["Tweet Text"].apply(preprocess_text)
         new_df[["Category", "Type"]] = new_df["Main Topic"].apply(lambda x: pd.Series(map_malay_to_type_and_category(x)))
-        new_df[["State", "District"]] = new_df["Tweet Text"].apply(lambda x: pd.Series(extract_location(x, nlp)))
+        new_df[["State", "District"]] = new_df["Tweet Text"].apply(lambda x: extract_location(x, nlp)).apply(pd.Series)
 
         # Upload data to Firebase
         crime_ref = db.reference("crime_data")
