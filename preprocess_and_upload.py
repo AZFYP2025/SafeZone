@@ -7,6 +7,8 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 import logging
 import re
+from googleapiclient.errors import HttpError  # Import HttpError
+import time  # Import time for retry delay
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -56,6 +58,18 @@ def fetch_google_sheets():
             # Convert to DataFrame and select only the required columns
             df = pd.DataFrame(values[1:], columns=values[0])
             df = df[["Date (GMT)", "Main Topic", "Tweet Text"]]  # Select only the required columns
+
+            # Modify Date Format (Remove Time)
+            df["Date (GMT)"] = pd.to_datetime(df["Date (GMT)"]).dt.date
+
+            # Malay Crime Terms Mapping
+            crime_mapping = {
+                "curi": "stealing", "pencuri": "stealing", "pencurian": "stealing",
+                "rogol": "rape", "perogol": "rape", "merogol": "rape",
+                "rompak": "robbery", "merompak": "robbery", "rompakan": "robbery"
+            }
+            df["Main Topic"] = df["Main Topic"].replace(crime_mapping)
+
             logging.info(f"Fetched {len(df)} rows from Google Sheets.")
             logging.info(f"Columns in DataFrame: {df.columns.tolist()}")  # Log column names
             logging.info(f"First row of data: {df.iloc[0].to_dict()}")  # Log first row of data
