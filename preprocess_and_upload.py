@@ -14,7 +14,7 @@ import time  # Import time for retry delay
 MALAYSIAN_STATES = [
     "johor", "kedah", "kelantan", "melaka", "negeri sembilan", "pahang",
     "perak", "perlis", "pulau pinang", "sabah", "sarawak", "selangor",
-    "terengganu", "w.p. kuala lumpur", "w.p. putrajaya"
+    "terengganu", "w.p. kuala lumpur"
 ]
 
 MALAYSIAN_DISTRICTS = [
@@ -44,7 +44,7 @@ MALAYSIAN_DISTRICTS = [
     "kuala langat", "kuala selangor", "petaling jaya", "sabak bernam", "sepang",
     "serdang", "sg. buloh", "shah alam", "subang jaya",  # Selangor
     "besut", "dungun", "hulu terengganu", "kemaman", "kuala terengganu", "marang", "setiu",  # Terengganu
-    "brickfields", "cheras", "dang wangi", "sentul", "wangsa maju"  # W.P. Kuala Lumpur
+    "brickfields", "cheras", "dang wangi", "sentul", "wangsa maju", "w.p. putrajaya"  # W.P. Kuala Lumpur
 ]
 
 SPECIAL_CASES = {
@@ -85,7 +85,6 @@ def initialize_nlp():
         logging.error(f"Error initializing NLP pipeline: {e}")
         raise
 
-# Fetch data from Google Sheets
 # Fetch data from Google Sheets
 def fetch_google_sheets():
     creds = service_account.Credentials.from_service_account_file("google-credentials.json", scopes=SCOPES)
