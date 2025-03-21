@@ -148,11 +148,10 @@ def process_and_upload():
             logging.info("✅ No new data to process.")
             return
             
-        test_location = extract_location(new_df["Tweet Text"].iloc[0], nlp)
-        print(f"Extracted Location Example: {test_location}")  # Should be a tuple (State, District)
-        
         # Process new rows
         new_df = pd.DataFrame(new_rows)
+        test_location = extract_location(new_df["Tweet Text"].iloc[0], nlp)
+        print(f"Extracted Location Example: {test_location}")  # Should be a tuple (State, District)
         new_df["Cleaned Text"] = new_df["Tweet Text"].apply(preprocess_text)
         new_df[["Category", "Type"]] = new_df["Main Topic"].apply(lambda x: pd.Series(map_malay_to_type_and_category(x)))
         new_df[["State", "District"]] = new_df["Tweet Text"].apply(lambda x: extract_location(x, nlp)).apply(pd.Series)
