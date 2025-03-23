@@ -15,7 +15,26 @@ if 'date' in df.columns:
     df['date'] = pd.to_datetime(df['date'])
 
 # Filter the DataFrame to include only the required columns
-df_filtered = df[['district', 'category', 'date', 'crimes']]
+df_filtered = df[['district', 'category', 'date', 'crimes']].copy()  # Use .copy() to avoid the warning
+
+# Combine crimes for Johor Bahru Utara Selatan and Johor Bahru Utara into Johor Bahru
+df_filtered['district'] = df_filtered['district'].replace({
+    'Johor Bahru Utara Selatan': 'Johor Bahru',
+    'Johor Bahru Utara': 'Johor Bahru'
+})
+
+# Combine crimes for Seberang Perai Selatan, Seberang Perai Tengah, and Seberang Perai Utara into Seberang Perai
+df_filtered['district'] = df_filtered['district'].replace({
+    'Seberang Perai Selatan': 'Seberang Perai',
+    'Seberang Perai Tengah': 'Seberang Perai',
+    'Seberang Perai Utara': 'Seberang Perai'
+})
+
+# Combine crimes for Klang Selatan and Klang Utara into Klang
+df_filtered['district'] = df_filtered['district'].replace({
+    'Klang Selatan': 'Klang',
+    'Klang Utara': 'Klang'
+})
 
 # Combine crimes for Johor Bahru Utara Selatan and Johor Bahru Utara into Johor Bahru
 df_filtered['district'] = df_filtered['district'].replace({
