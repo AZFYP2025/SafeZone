@@ -360,7 +360,7 @@ def extract_location(text, nlp):
         text_lower = text.lower()
         for key, value in SPECIAL_CASES.items():
             if key in text_lower:
-                return value, "Unknown"
+                return value, "Unknown"  # Return the mapped state and set district to "Unknown"
 
         # 2️⃣ Use regex to detect common location phrases (e.g., "di shah alam")
         match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\s]+)", text_lower)
