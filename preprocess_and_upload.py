@@ -53,7 +53,8 @@ ABBREVIATIONS = {
     "sg buloh": "sg. buloh",
     "sungai buloh": "sg. buloh",
     "kl": "w.p. kuala lumpur",
-    "kuala lumpur": "w.p. kuala lumpur"
+    "kuala lumpur": "w.p. kuala lumpur",
+    "n9": "negeri sembilan",
 }
 
 DISTRICT_TO_STATE = {
