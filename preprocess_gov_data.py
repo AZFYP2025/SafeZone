@@ -39,11 +39,9 @@ df_combined = df_combined[['state', 'district', 'category', 'date', 'crimes']]
 
 # Upload to Google Sheets
 def upload_to_google_sheets(dataframe, sheet_id, credentials_file):
-    # Define the scope
-    scope = SCOPES
 
     # Add your credentials JSON file
-    creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, scope)
+    reds = service_account.Credentials.from_service_account_file("google-credentials.json", SCOPES)
 
     # Authorize the client
     client = gspread.authorize(creds)
