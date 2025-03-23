@@ -42,7 +42,7 @@ URL_DATA = 'https://storage.data.gov.my/publicsafety/crime_district.parquet'
 df = pd.read_parquet(URL_DATA)
 
 # Check for required columns
-required_columns = ['district', 'category', 'date', 'crimes']
+required_columns = ['state', 'district', 'category', 'date', 'crimes']
 if not all(column in df.columns for column in required_columns):
     raise ValueError(f"DataFrame is missing one or more required columns: {required_columns}")
 
@@ -61,14 +61,14 @@ df_filtered['district'] = df_filtered['district'].replace({
     'Seberang Perai Utara': 'Seberang Perai',
     'Klang Selatan': 'Klang',
     'Klang Utara': 'Klang',
-    'Cameron Highland': 'Cameron Highlands'
+    'Cameron Highland': 'Cameron Highlands'  # Fix district name
 })
 
-# Group by district, category, and date, and sum the crimes
-df_combined = df_filtered.groupby(['district', 'category', 'date'], as_index=False)['crimes'].sum()
+# Group by state, district, category, and date, and sum the crimes
+df_combined = df_filtered.groupby(['state', 'district', 'category', 'date'], as_index=False)['crimes'].sum()
 
 # Reorder columns to match your Google Sheet format
-df_combined = df_combined[['district', 'category', 'date', 'crimes']]
+df_combined = df_combined[['state', 'district', 'category', 'date', 'crimes']]
 
 # Format date for Google Sheets
 df_combined['date'] = df_combined['date'].dt.strftime('%Y-%m-%d')
@@ -85,7 +85,7 @@ def upload_to_google_sheets(dataframe, sheet_id, credentials_file, worksheet_nam
         # Open the Google Sheet by ID and select the worksheet
         sheet = client.open_by_key(sheet_id).worksheet(worksheet_name)
 
-        # Clear existing data in the sheet (optional)
+        # Clear all existing data in the sheet
         sheet.clear()
 
         # Convert the DataFrame to a list of lists
