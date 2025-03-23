@@ -362,12 +362,7 @@ def extract_location(text, nlp):
         for abbrev, full_form in ABBREVIATIONS.items():
             text_lower = text_lower.replace(abbrev, full_form)
 
-        # 2️⃣ Check for special cases (states)
-        for key, value in SPECIAL_CASES.items():
-            if key in text_lower:
-                return value, "Unknown"  # Return the mapped state and set district to "Unknown"
-
-        # 3️⃣ Use regex to detect common location phrases (e.g., "di shah alam")
+        # 2️⃣ Use regex to detect common location phrases (e.g., "di shah alam")
         match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\.\s]+)", text_lower)
         if match:
             possible_location = match.group(2).strip()
@@ -380,7 +375,7 @@ def extract_location(text, nlp):
                     else:
                         return loc, "Unknown"  # Return location as state, district as Unknown
 
-        # 4️⃣ If regex fails, use Stanza NLP
+        # 3️⃣ If regex fails, use Stanza NLP
         doc = nlp(text)
         locations = [ent.text for ent in doc.ents if ent.type == "GPE"]  # GPE = Geopolitical Entity
 
