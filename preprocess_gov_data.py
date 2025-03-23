@@ -6,7 +6,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SHEET_ID = "1CNo8eLCASEfd7ktOgiUrzT8KBkAWhW5sPON1BITBKvM"
 
-# Load the data
+# Load the data from the public URL
 URL_DATA = 'https://storage.data.gov.my/publicsafety/crime_district.parquet'
 df = pd.read_parquet(URL_DATA)
 
@@ -17,40 +17,13 @@ if 'date' in df.columns:
 # Filter the DataFrame to include only the required columns
 df_filtered = df[['district', 'category', 'date', 'crimes']].copy()  # Use .copy() to avoid the warning
 
-# Combine crimes for Johor Bahru Utara Selatan and Johor Bahru Utara into Johor Bahru
+# Combine districts as specified
 df_filtered['district'] = df_filtered['district'].replace({
     'Johor Bahru Utara Selatan': 'Johor Bahru',
-    'Johor Bahru Utara': 'Johor Bahru'
-})
-
-# Combine crimes for Seberang Perai Selatan, Seberang Perai Tengah, and Seberang Perai Utara into Seberang Perai
-df_filtered['district'] = df_filtered['district'].replace({
+    'Johor Bahru Utara': 'Johor Bahru',
     'Seberang Perai Selatan': 'Seberang Perai',
     'Seberang Perai Tengah': 'Seberang Perai',
-    'Seberang Perai Utara': 'Seberang Perai'
-})
-
-# Combine crimes for Klang Selatan and Klang Utara into Klang
-df_filtered['district'] = df_filtered['district'].replace({
-    'Klang Selatan': 'Klang',
-    'Klang Utara': 'Klang'
-})
-
-# Combine crimes for Johor Bahru Utara Selatan and Johor Bahru Utara into Johor Bahru
-df_filtered['district'] = df_filtered['district'].replace({
-    'Johor Bahru Utara Selatan': 'Johor Bahru',
-    'Johor Bahru Utara': 'Johor Bahru'
-})
-
-# Combine crimes for Seberang Perai Selatan, Seberang Perai Tengah, and Seberang Perai Utara into Seberang Perai
-df_filtered['district'] = df_filtered['district'].replace({
-    'Seberang Perai Selatan': 'Seberang Perai',
-    'Seberang Perai Tengah': 'Seberang Perai',
-    'Seberang Perai Utara': 'Seberang Perai'
-})
-
-# Combine crimes for Klang Selatan and Klang Utara into Klang
-df_filtered['district'] = df_filtered['district'].replace({
+    'Seberang Perai Utara': 'Seberang Perai',
     'Klang Selatan': 'Klang',
     'Klang Utara': 'Klang'
 })
