@@ -72,7 +72,7 @@ def upload_to_google_sheets(dataframe, sheet_id, credentials_file):
     print("Data uploaded to Google Sheets successfully!")
 
 # Replace with your Google Sheet ID and credentials file path
-CREDENTIALS_FILE = "google-credentials.json"  # Path to your Google API credentials JSON file
+credentials_file = "google-credentials.json"  # Path to your Google API credentials JSON file
 
 # Upload the preprocessed data to Google Sheets
 upload_to_google_sheets(df_combined, SHEET_ID, CREDENTIALS_FILE)
