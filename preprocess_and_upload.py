@@ -354,47 +354,47 @@ def generate_row_id(row):
         return None
 
 # Extract State and District from Text using NLP
+import re
+import logging
+
 def extract_location(text, nlp):
     try:
-        # 1️⃣ First, check for special cases (e.g., "kl" -> "w.p. kuala lumpur")
         text_lower = text.lower()
+
+        # 1️⃣ First, check for special cases (e.g., "kl" -> "w.p. kuala lumpur")
         for key, value in SPECIAL_CASES.items():
             if key in text_lower:
-                return value, "Unknown"  # Return the mapped state and set district to "Unknown"
+                return value, key  # Return the mapped state and exact district name
 
         # 2️⃣ Use regex to detect common location phrases (e.g., "di shah alam")
         match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\s]+)", text_lower)
         if match:
             possible_location = match.group(2).strip()
             for loc in MALAYSIAN_LOCATIONS:
-                if loc.lower() in possible_location.lower():
+                if loc.lower() == possible_location.lower():
                     # Check if the location is a district
                     if loc.lower() in DISTRICT_TO_STATE:
-                        state = DISTRICT_TO_STATE[loc.lower()]
-                        return state, loc  # Return state and district
+                        return DISTRICT_TO_STATE[loc.lower()], loc  # Correct mapping
                     else:
-                        return loc, "Unknown"  # Return location as state, district as Unknown
+                        return loc, "Unknown"  # State is found, but district is unknown
 
-        # 3️⃣ If regex fails, use Stanza NLP
+        # 3️⃣ Use Stanza NLP if regex fails
         doc = nlp(text)
-        locations = [ent.text for ent in doc.ents if ent.type == "GPE"]  # GPE = Geopolitical Entity
+        locations = [ent.text.lower() for ent in doc.ents if ent.type == "GPE"]
 
-        if len(locations) >= 2:
-            return locations[0], locations[1]  # State & District
-        elif len(locations) == 1:
-            # Check if the single location is a district
-            if locations[0].lower() in DISTRICT_TO_STATE:
-                state = DISTRICT_TO_STATE[locations[0].lower()]
-                return state, locations[0]  # Return state and district
-            else:
-                return locations[0], "Unknown"  # Return location as state, district as Unknown
-        else:
-            logging.warning(f"No location found in text: {text}")
-            return "Unknown", "Unknown"  # Default case
+        for loc in locations:
+            if loc in DISTRICT_TO_STATE:
+                return DISTRICT_TO_STATE[loc], loc  # Correct district and state mapping
+            elif loc in MALAYSIAN_STATES:
+                return loc, "Unknown"  # State found, district unknown
+
+        logging.warning(f"No location found in text: {text}")
+        return "Unknown", "Unknown"  # Default case
 
     except Exception as e:
         logging.error(f"Error extracting location: {e}")
         return "Unknown", "Unknown"
+
         
 # Map Malay crime terms to Type and Category
 def map_malay_to_type_and_category(topic):
