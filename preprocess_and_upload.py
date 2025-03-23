@@ -52,7 +52,7 @@ SPECIAL_CASES = {
     "kuala lumpur": "w.p. kuala lumpur",
     "putrajaya": "w.p. putrajaya",
     "sungai buloh": "sg. buloh",
-    "sg buloh": "sg.buloh"
+    "sg buloh": "sg. buloh"
 }
 
 DISTRICT_TO_STATE = {
