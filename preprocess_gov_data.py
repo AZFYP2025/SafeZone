@@ -49,6 +49,9 @@ if not all(column in df.columns for column in required_columns):
 # Convert 'date' to datetime if it exists
 df['date'] = pd.to_datetime(df['date'])
 
+# Filter out rows where the state is 'Malaysia'
+df = df[df['state'] != 'Malaysia']
+
 # Filter the DataFrame to include only the required columns
 df_filtered = df[required_columns].copy()
 
