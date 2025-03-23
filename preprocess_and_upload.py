@@ -470,6 +470,70 @@ def extract_location(text, nlp):
     except Exception as e:
         logging.error(f"Error extracting location: {e}")
         return "Unknown", "Unknown"
+
+# Process and Upload Data
+def process_and_upload():
+    try:
+        logging.info("Starting data processing and upload...")
+        
+        # Fetch data from Google Sheets
+        df = fetch_google_sheets()
+        if df.empty:
+            logging.info("No data to process.")
+            return
+
+        # Get already processed IDs from Firebase
+        processed_ref = db.reference("processed_ids")
+        processed_ids = processed_ref.get() or {}
+
+        # Filter new rows
+        new_rows = []
+        for _, row in df.iterrows():
+            row_id = generate_row_id(row)
+            if row_id and row_id not in processed_ids:
+                new_rows.append(row)
+
+        if not new_rows:
+            logging.info("✅ No new data to process.")
+            return
+            
+        # Process new rows
+        new_df = pd.DataFrame(new_rows)
+        test_location = extract_location(new_df["Tweet Text"].iloc[0], nlp)
+        print(f"Extracted Location Example: {test_location}")  # Should be a tuple (State, District)
+        new_df["Cleaned Text"] = new_df["Tweet Text"].apply(preprocess_text)
+        new_df[["Category", "Type"]] = new_df["Main Topic"].apply(lambda x: pd.Series(map_malay_to_type_and_category(x)))
+        new_df[["State", "District"]] = new_df["Tweet Text"].apply(lambda x: extract_location(x, nlp)).apply(pd.Series)
+
+        # Log the processed DataFrame
+        logging.info(f"Processed DataFrame columns: {new_df.columns.tolist()}")
+        logging.info(f"Processed DataFrame first row: {new_df.iloc[0].to_dict()}")
+
+        # Upload data to Firebase
+        crime_ref = db.reference("crime_data")
+        batch = {}
+        
+        for _, row in new_df.iterrows():
+            row_id = generate_row_id(row)
+            if row_id:
+                # Convert date to string
+                date_str = row["Date (GMT)"].isoformat()  # Convert date to ISO format string
+                crime_data = {
+                    "state": row["State"],
+                    "district": row["District"],
+                    "category": row["Category"],  # "Assault" or "Property"
+                    "type": row["Type"],  # Malay term (e.g., "pencuri", "rogol")
+                    "date": date_str  # Use the string representation of the date
+                }
+                batch[row_id] = crime_data
+                processed_ids[row_id] = True  # Mark as processed
+
+        # Atomic update to Firebase
+        crime_ref.update(batch)
+        processed_ref.update(processed_ids)
+        logging.info(f"✅ Added {len(new_df)} new records to Firebase!")
+    except Exception as e:
+        logging.error(f"Error in process_and_upload: {e}")
         
 # Main execution
 if __name__ == "__main__":
