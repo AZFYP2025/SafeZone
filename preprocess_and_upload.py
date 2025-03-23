@@ -47,8 +47,8 @@ MALAYSIAN_DISTRICTS = [
     "brickfields", "cheras", "dang wangi", "sentul", "wangsa maju", "w.p. putrajaya"  # W.P. Kuala Lumpur
 ]
 
-# Define normalization mappings
-NORMALIZATION_MAPPINGS = {
+# Dictionary for abbreviations
+ABBREVIATIONS = {
     "putrajaya": "w.p. putrajaya",
     "sg buloh": "sg. buloh",
     "sungai buloh": "sg. buloh",
@@ -357,53 +357,50 @@ def generate_row_id(row):
 # Extract State and District from Text using NLP
 def extract_location(text, nlp):
     try:
-        text_lower = text.lower().strip()
+        # 1️⃣ Normalize the text by replacing abbreviations
+        text_lower = text.lower()
+        for abbrev, full_form in ABBREVIATIONS.items():
+            text_lower = text_lower.replace(abbrev, full_form)
 
-        # 1️⃣ Handle Special Cases for State
-        if text_lower in SPECIAL_STATE_CASES:
-            return SPECIAL_STATE_CASES[text_lower], "Unknown"  # State is corrected, district unknown
+        # 2️⃣ Check for special cases (states)
+        for key, value in SPECIAL_CASES.items():
+            if key in text_lower:
+                return value, "Unknown"  # Return the mapped state and set district to "Unknown"
 
-        # 2️⃣ Handle Special Cases for District
-        if text_lower in SPECIAL_DISTRICT_CASES:
-            district = SPECIAL_DISTRICT_CASES[text_lower]
-            # Ensure the correct state is assigned
-            if district.lower() in DISTRICT_TO_STATE:
-                return DISTRICT_TO_STATE[district.lower()], district
-            return "Unknown", district  # District found, but state unknown
-
-        # 3️⃣ Use regex to detect location mentions
-        match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\s]+)", text_lower)
+        # 3️⃣ Use regex to detect common location phrases (e.g., "di shah alam")
+        match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\.\s]+)", text_lower)
         if match:
             possible_location = match.group(2).strip()
             for loc in MALAYSIAN_LOCATIONS:
                 if loc.lower() in possible_location.lower():
+                    # Check if the location is a district
                     if loc.lower() in DISTRICT_TO_STATE:
                         state = DISTRICT_TO_STATE[loc.lower()]
-                        return state, loc  # Return correct state & district
+                        return state, loc  # Return state and district
                     else:
-                        return loc, "Unknown"  # If not a district, treat as state
+                        return loc, "Unknown"  # Return location as state, district as Unknown
 
-        # 4️⃣ Use Stanza NLP for Named Entity Recognition (NER)
+        # 4️⃣ If regex fails, use Stanza NLP
         doc = nlp(text)
-        locations = [ent.text for ent in doc.ents if ent.type == "GPE"]
+        locations = [ent.text for ent in doc.ents if ent.type == "GPE"]  # GPE = Geopolitical Entity
 
         if len(locations) >= 2:
-            return locations[0], locations[1]  # Return state & district
+            return locations[0], locations[1]  # State & District
         elif len(locations) == 1:
+            # Check if the single location is a district
             if locations[0].lower() in DISTRICT_TO_STATE:
                 state = DISTRICT_TO_STATE[locations[0].lower()]
-                return state, locations[0]  # Return correct state & district
+                return state, locations[0]  # Return state and district
             else:
-                return locations[0], "Unknown"
-
-        logging.warning(f"No location found in text: {text}")
-        return "Unknown", "Unknown"
+                return locations[0], "Unknown"  # Return location as state, district as Unknown
+        else:
+            logging.warning(f"No location found in text: {text}")
+            return "Unknown", "Unknown"  # Default case
 
     except Exception as e:
         logging.error(f"Error extracting location: {e}")
         return "Unknown", "Unknown"
 
-        
 # Map Malay crime terms to Type and Category
 def map_malay_to_type_and_category(topic):
     topic = topic.lower().strip()  # Ensure case insensitivity and remove extra spaces
@@ -415,61 +412,6 @@ def map_malay_to_type_and_category(topic):
         return "property", "robbery"
     else:
         return "Other", "Unknown"  # Default for unknown terms
-
-# Process and Upload Data
-def normalize_text(text):
-    """
-    Normalize the text by replacing special cases with their standardized forms.
-    """
-    text_lower = text.lower()
-    for key, value in NORMALIZATION_MAPPINGS.items():
-        if key in text_lower:
-            text_lower = text_lower.replace(key, value)
-    return text_lower
-
-def extract_location(text, nlp):
-    try:
-        # Normalize the text first
-        normalized_text = normalize_text(text)
-
-        # 1️⃣ Check if the normalized text contains a special case
-        for key, value in NORMALIZATION_MAPPINGS.items():
-            if value in normalized_text:
-                # If the normalized text matches a special case, use DISTRICT_TO_STATE to find the state
-                state = DISTRICT_TO_STATE.get(value, "Unknown")
-                return state, value  # Return state and district
-
-        # 2️⃣ Use regex to detect location mentions
-        match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\s]+)", normalized_text)
-        if match:
-            possible_location = match.group(2).strip()
-            # Check if the location is in DISTRICT_TO_STATE
-            for loc in DISTRICT_TO_STATE:
-                if loc.lower() in possible_location.lower():
-                    state = DISTRICT_TO_STATE[loc.lower()]
-                    return state, loc  # Return correct state & district
-
-        # 3️⃣ Use NLP for Named Entity Recognition (NER)
-        doc = nlp(text)
-        locations = [ent.text for ent in doc.ents if ent.type == "GPE"]
-
-        if len(locations) >= 2:
-            return locations[0], locations[1]  # Return state & district
-        elif len(locations) == 1:
-            # Check if the location is in DISTRICT_TO_STATE
-            location_lower = locations[0].lower()
-            if location_lower in DISTRICT_TO_STATE:
-                state = DISTRICT_TO_STATE[location_lower]
-                return state, locations[0]  # Return correct state & district
-            else:
-                return locations[0], "Unknown"  # Treat as state, district unknown
-
-        logging.warning(f"No location found in text: {text}")
-        return "Unknown", "Unknown"
-
-    except Exception as e:
-        logging.error(f"Error extracting location: {e}")
-        return "Unknown", "Unknown"
 
 # Process and Upload Data
 def process_and_upload():
