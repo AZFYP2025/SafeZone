@@ -1,4 +1,4 @@
-name: Crime Data Preprocessing
+name: Government Data Preprocessing
 
 on:
   schedule:
