@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Google Sheets API Setup
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-SHEET_ID = os.getenv('SHEET_ID', "1CNo8eLCASEfd7ktOgiUrzT8KBkAWhW5sPON1BITBKvM")  # Default Sheet ID
+SHEET_ID = "1CNo8eLCASEfd7ktOgiUrzT8KBkAWhW5sPON1BITBKvM"  # Hardcoded Google Sheet ID
 
 # Load the credentials from the repository secret
 GOOGLE_SHEETS_CREDENTIALS = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
