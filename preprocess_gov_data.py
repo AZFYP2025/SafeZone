@@ -10,11 +10,11 @@ df = pd.read_parquet(URL_DATA)
 if 'date' in df.columns:
     df['date'] = pd.to_datetime(df['date'])
 
-# Select required columns
-df_filtered = df[['district', 'category', 'date', 'crimes']]
+# Create a copy to avoid SettingWithCopyWarning
+df_filtered = df[['district', 'category', 'date', 'crimes']].copy()
 
 # Normalize district names (merging districts)
-df_filtered['district'] = df_filtered['district'].replace({
+df_filtered.loc[:, 'district'] = df_filtered['district'].replace({
     'Johor Bahru Selatan': 'Johor Bahru',
     'Johor Bahru Utara': 'Johor Bahru',
     'Klang Selatan': 'Johor Bahru',
