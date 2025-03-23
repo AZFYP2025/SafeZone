@@ -28,7 +28,7 @@ df_filtered.loc[:, 'district'] = df_filtered['district'].replace({
 df_grouped = df_filtered.groupby(['district', 'category', 'date'], as_index=False)['crimes'].sum()
 
 # Google Sheets API Setup
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SHEET_NAME = "SafeZone"  # Google Sheet name
 WORKSHEET_NAME = "SafeZoneGOV"  # Specific sheet inside SafeZone
 SERVICE_ACCOUNT_FILE = "google-credentials.json"  # Replace with actual credentials file
