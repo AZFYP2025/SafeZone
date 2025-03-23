@@ -363,7 +363,7 @@ def extract_location(text, nlp):
                 return value, "Unknown"
 
         # 2️⃣ Use regex to detect common location phrases (e.g., "di shah alam")
-        match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\s]+)", text_lower)
+        match = re.search(r"(di|kat|di dalam|di kawasan|dekat)\s+([\w\s]+)", text_lower)
         if match:
             possible_location = match.group(2).strip()
             for loc in MALAYSIAN_LOCATIONS:
