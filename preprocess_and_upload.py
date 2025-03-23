@@ -47,16 +47,13 @@ MALAYSIAN_DISTRICTS = [
     "brickfields", "cheras", "dang wangi", "sentul", "wangsa maju", "w.p. putrajaya"  # W.P. Kuala Lumpur
 ]
 
-# Define special cases for states and districts separately
-SPECIAL_STATE_CASES = {
-    "kl": "w.p. kuala lumpur",
-    "kuala lumpur": "w.p. kuala lumpur"
-}
-
-SPECIAL_DISTRICT_CASES = {
+# Define normalization mappings
+NORMALIZATION_MAPPINGS = {
     "putrajaya": "w.p. putrajaya",
     "sg buloh": "sg. buloh",
-    "sungai buloh": "sg. buloh"
+    "sungai buloh": "sg. buloh",
+    "kl": "w.p. kuala lumpur",
+    "kuala lumpur": "w.p. kuala lumpur"
 }
 
 DISTRICT_TO_STATE = {
@@ -420,68 +417,59 @@ def map_malay_to_type_and_category(topic):
         return "Other", "Unknown"  # Default for unknown terms
 
 # Process and Upload Data
-def process_and_upload():
+def normalize_text(text):
+    """
+    Normalize the text by replacing special cases with their standardized forms.
+    """
+    text_lower = text.lower()
+    for key, value in NORMALIZATION_MAPPINGS.items():
+        if key in text_lower:
+            text_lower = text_lower.replace(key, value)
+    return text_lower
+
+def extract_location(text, nlp):
     try:
-        logging.info("Starting data processing and upload...")
-        
-        # Fetch data from Google Sheets
-        df = fetch_google_sheets()
-        if df.empty:
-            logging.info("No data to process.")
-            return
+        # Normalize the text first
+        normalized_text = normalize_text(text)
 
-        # Get already processed IDs from Firebase
-        processed_ref = db.reference("processed_ids")
-        processed_ids = processed_ref.get() or {}
+        # 1️⃣ Check if the normalized text contains a special case
+        for key, value in NORMALIZATION_MAPPINGS.items():
+            if value in normalized_text:
+                # If the normalized text matches a special case, use DISTRICT_TO_STATE to find the state
+                state = DISTRICT_TO_STATE.get(value, "Unknown")
+                return state, value  # Return state and district
 
-        # Filter new rows
-        new_rows = []
-        for _, row in df.iterrows():
-            row_id = generate_row_id(row)
-            if row_id and row_id not in processed_ids:
-                new_rows.append(row)
+        # 2️⃣ Use regex to detect location mentions
+        match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\s]+)", normalized_text)
+        if match:
+            possible_location = match.group(2).strip()
+            # Check if the location is in DISTRICT_TO_STATE
+            for loc in DISTRICT_TO_STATE:
+                if loc.lower() in possible_location.lower():
+                    state = DISTRICT_TO_STATE[loc.lower()]
+                    return state, loc  # Return correct state & district
 
-        if not new_rows:
-            logging.info("✅ No new data to process.")
-            return
-            
-        # Process new rows
-        new_df = pd.DataFrame(new_rows)
-        test_location = extract_location(new_df["Tweet Text"].iloc[0], nlp)
-        print(f"Extracted Location Example: {test_location}")  # Should be a tuple (State, District)
-        new_df["Cleaned Text"] = new_df["Tweet Text"].apply(preprocess_text)
-        new_df[["Category", "Type"]] = new_df["Main Topic"].apply(lambda x: pd.Series(map_malay_to_type_and_category(x)))
-        new_df[["State", "District"]] = new_df["Tweet Text"].apply(lambda x: extract_location(x, nlp)).apply(pd.Series)
+        # 3️⃣ Use NLP for Named Entity Recognition (NER)
+        doc = nlp(text)
+        locations = [ent.text for ent in doc.ents if ent.type == "GPE"]
 
-        # Log the processed DataFrame
-        logging.info(f"Processed DataFrame columns: {new_df.columns.tolist()}")
-        logging.info(f"Processed DataFrame first row: {new_df.iloc[0].to_dict()}")
+        if len(locations) >= 2:
+            return locations[0], locations[1]  # Return state & district
+        elif len(locations) == 1:
+            # Check if the location is in DISTRICT_TO_STATE
+            location_lower = locations[0].lower()
+            if location_lower in DISTRICT_TO_STATE:
+                state = DISTRICT_TO_STATE[location_lower]
+                return state, locations[0]  # Return correct state & district
+            else:
+                return locations[0], "Unknown"  # Treat as state, district unknown
 
-        # Upload data to Firebase
-        crime_ref = db.reference("crime_data")
-        batch = {}
-        
-        for _, row in new_df.iterrows():
-            row_id = generate_row_id(row)
-            if row_id:
-                # Convert date to string
-                date_str = row["Date (GMT)"].isoformat()  # Convert date to ISO format string
-                crime_data = {
-                    "state": row["State"],
-                    "district": row["District"],
-                    "category": row["Category"],  # "Assault" or "Property"
-                    "type": row["Type"],  # Malay term (e.g., "pencuri", "rogol")
-                    "date": date_str  # Use the string representation of the date
-                }
-                batch[row_id] = crime_data
-                processed_ids[row_id] = True  # Mark as processed
+        logging.warning(f"No location found in text: {text}")
+        return "Unknown", "Unknown"
 
-        # Atomic update to Firebase
-        crime_ref.update(batch)
-        processed_ref.update(processed_ids)
-        logging.info(f"✅ Added {len(new_df)} new records to Firebase!")
     except Exception as e:
-        logging.error(f"Error in process_and_upload: {e}")
+        logging.error(f"Error extracting location: {e}")
+        return "Unknown", "Unknown"
         
 # Main execution
 if __name__ == "__main__":
