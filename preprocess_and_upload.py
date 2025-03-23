@@ -363,12 +363,17 @@ def extract_location(text, nlp):
                 return value, "Unknown"
 
         # 2️⃣ Use regex to detect common location phrases (e.g., "di shah alam")
-        match = re.search(r"(di|kat|di dalam|di kawasan|dekat)\s+([\w\s]+)", text_lower)
+        match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\s]+)", text_lower)
         if match:
             possible_location = match.group(2).strip()
             for loc in MALAYSIAN_LOCATIONS:
                 if loc.lower() in possible_location.lower():
-                    return loc, "Unknown"  # Found a known location
+                    # Check if the location is a district
+                    if loc.lower() in DISTRICT_TO_STATE:
+                        state = DISTRICT_TO_STATE[loc.lower()]
+                        return state, loc  # Return state and district
+                    else:
+                        return loc, "Unknown"  # Return location as state, district as Unknown
 
         # 3️⃣ If regex fails, use Stanza NLP
         doc = nlp(text)
@@ -377,7 +382,12 @@ def extract_location(text, nlp):
         if len(locations) >= 2:
             return locations[0], locations[1]  # State & District
         elif len(locations) == 1:
-            return locations[0], "Unknown"  # State, No District
+            # Check if the single location is a district
+            if locations[0].lower() in DISTRICT_TO_STATE:
+                state = DISTRICT_TO_STATE[locations[0].lower()]
+                return state, locations[0]  # Return state and district
+            else:
+                return locations[0], "Unknown"  # Return location as state, district as Unknown
         else:
             logging.warning(f"No location found in text: {text}")
             return "Unknown", "Unknown"  # Default case
