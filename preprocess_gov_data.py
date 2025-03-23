@@ -29,12 +29,11 @@ df_grouped = df_filtered.groupby(['district', 'category', 'date'], as_index=Fals
 
 # Google Sheets API Setup
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-SHEET_NAME = "SafeZone"  # Google Sheet name
-WORKSHEET_NAME = "SafeZoneGOV"  # Specific sheet inside SafeZone
-SERVICE_ACCOUNT_FILE = "google-credentials.json"  # Replace with actual credentials file
+SHEET_ID = "1CNo8eLCASEfd7ktOgiUrzT8KBkAWhW5sPON1BITBKvM"  # Your Google Sheet ID
+sheet = client.open_by_key(SHEET_ID).worksheet("SafeZoneGOV")  # Open sheet by ID
 
 # Authenticate and Connect to Google Sheets
-creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+creds = service_account.Credentials.from_service_account_file("google-credentials.json", scopes=SCOPES)
 client = gspread.authorize(creds)
 
 # Function to Upload Data to Google Sheets (SafeZone Sheet)
