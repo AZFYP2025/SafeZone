@@ -1,29 +1,38 @@
-name: Update SafeZoneGOV Data
+name: Crime Data Preprocessing
 
 on:
   schedule:
-    - cron: "0 0 * * 1"  # Runs every Monday at midnight UTC
-  workflow_dispatch:  # Allows manual execution
+    - cron: '0 0 * * 1'  # Runs daily at midnight UTC
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
-  update-crime-data:
+  preprocess-and-upload:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Install Dependencies
-        run: pip install pandas gspread google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client pyarrow
-
-      - name: Download Google Sheets Credentials
+      - name: Install dependencies
         run: |
-          echo '${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}' > google-credentials.json
+          python -m pip install --upgrade pip
+          pip install oauth2client gspread pandas pyarrow
 
-      - name: Run Data Processing Script
-        run: python preprocess_gov_data.py  # Make sure this matches your script filename
+      - name: Add Google API credentials
+        env:
+          CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}  # Store your credentials JSON as a GitHub secret
+        run: |
+          echo "$CREDENTIALS_JSON" > google-credentials.json
+
+      - name: Run preprocessing script
+        run: |
+          python preprocess_gov_data.py
+
+      - name: Clean up credentials
+        run: |
+          rm -f google-credentials.json
