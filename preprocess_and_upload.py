@@ -363,14 +363,16 @@ def extract_location(text, nlp):
         text_lower = text.lower().strip()
 
         # 1️⃣ Handle Special Cases for State
-        for key, value in SPECIAL_STATE_CASES.items():
-            if text_lower == key:
-                return value, "Unknown"  # State is corrected, district is unknown
+        if text_lower in SPECIAL_STATE_CASES:
+            return SPECIAL_STATE_CASES[text_lower], "Unknown"  # State is corrected, district unknown
 
         # 2️⃣ Handle Special Cases for District
-        for key, value in SPECIAL_DISTRICT_CASES.items():
-            if text_lower == key:
-                return "Unknown", value  # District is corrected, state is unknown
+        if text_lower in SPECIAL_DISTRICT_CASES:
+            district = SPECIAL_DISTRICT_CASES[text_lower]
+            # Ensure the correct state is assigned
+            if district.lower() in DISTRICT_TO_STATE:
+                return DISTRICT_TO_STATE[district.lower()], district
+            return "Unknown", district  # District found, but state unknown
 
         # 3️⃣ Use regex to detect location mentions
         match = re.search(r"(di|kat|di dalam|di kawasan)\s+([\w\s]+)", text_lower)
