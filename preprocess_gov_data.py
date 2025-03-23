@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Google Sheets API Setup
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-SHEET_ID = os.getenv('SHEET_ID', "1CNo8eLCASEfd7ktOgiUrzT8KBkAWhW5sPON1BITBKvM")
+SHEET_ID = os.getenv('SHEET_ID', "1CNo8eLCASEfd7ktOgiUrzT8KBkAWhW5sPON1BITBKvM")  # Default Sheet ID
 
 # Load the credentials from the repository secret
 GOOGLE_SHEETS_CREDENTIALS = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
@@ -34,6 +34,7 @@ def create_credentials_file(credentials_json):
         logging.error("Invalid JSON in GOOGLE_SHEETS_CREDENTIALS.")
         exit(1)
 
+# Create the credentials file
 credentials_file = create_credentials_file(GOOGLE_SHEETS_CREDENTIALS)
 
 # Load the data from the public URL
@@ -77,28 +78,39 @@ df_combined['date'] = df_combined['date'].dt.strftime('%Y-%m-%d')
 # Upload to Google Sheets
 def upload_to_google_sheets(dataframe, sheet_id, credentials_file, worksheet_name="SafeZoneGOV"):
     try:
+        # Load credentials and authorize the client
         creds = service_account.Credentials.from_service_account_file(
             credentials_file, scopes=SCOPES
         )
         client = gspread.authorize(creds)
+
+        # Open the Google Sheet by ID and select the worksheet
         sheet = client.open_by_key(sheet_id).worksheet(worksheet_name)
+
+        # Clear existing data in the sheet (optional)
         sheet.clear()
 
+        # Convert the DataFrame to a list of lists
         data_to_upload = dataframe.values.tolist()
+
+        # Add the header row
         header = dataframe.columns.tolist()
         data_to_upload.insert(0, header)
 
+        # Calculate the range dynamically based on the size of the data
         num_rows = len(data_to_upload)
         num_cols = len(data_to_upload[0]) if num_rows > 0 else 0
-        range_name = f"A1:{chr(64 + num_cols)}{num_rows}"
+        range_name = f"A1:{chr(64 + num_cols)}{num_rows}"  # Example: "A1:E10"
 
+        # Upload the data to the Google Sheet
         sheet.update(range_name, data_to_upload)
+
         logging.info("Data uploaded to Google Sheets successfully!")
     except Exception as e:
         logging.error(f"An error occurred: {e}")
 
 # Upload the preprocessed data to Google Sheets
-upload_to_google_sheets(df_combined, SHEET_ID, credentials_file)
+upload_to_google_sheets(df_combined, SHEET_ID, credentials_file, worksheet_name="SafeZoneGOV")
 
 # Clean up the temporary credentials file
 os.remove(credentials_file)
