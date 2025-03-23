@@ -54,7 +54,7 @@ ABBREVIATIONS = {
     "kl": "w.p. kuala lumpur",
     "kuala lumpur": "w.p. kuala lumpur",
     "n9": "negeri sembilan",
-    "tg malim: "tanjong malim",
+    "tg malim": "tanjong malim",
     "tanjung malim": "tanjong malim",
     "cameron highland": "cameron highlands"
 }
