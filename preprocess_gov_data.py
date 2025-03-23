@@ -3,6 +3,8 @@ import gspread
 from google.oauth2 import service_account
 import os
 import logging
+import json
+import tempfile
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -10,7 +12,29 @@ logging.basicConfig(level=logging.INFO)
 # Google Sheets API Setup
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SHEET_ID = os.getenv('SHEET_ID', "1CNo8eLCASEfd7ktOgiUrzT8KBkAWhW5sPON1BITBKvM")
-credentials_file = os.getenv('GOOGLE_CREDENTIALS_FILE', "google-credentials.json")
+
+# Load the credentials from the repository secret
+GOOGLE_SHEETS_CREDENTIALS = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
+
+if not GOOGLE_SHEETS_CREDENTIALS:
+    logging.error("GOOGLE_SHEETS_CREDENTIALS environment variable is not set.")
+    exit(1)
+
+# Write the credentials to a temporary file
+def create_credentials_file(credentials_json):
+    try:
+        # Parse the JSON to ensure it's valid
+        credentials = json.loads(credentials_json)
+        
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as temp_file:
+            json.dump(credentials, temp_file)
+            return temp_file.name
+    except json.JSONDecodeError:
+        logging.error("Invalid JSON in GOOGLE_SHEETS_CREDENTIALS.")
+        exit(1)
+
+credentials_file = create_credentials_file(GOOGLE_SHEETS_CREDENTIALS)
 
 # Load the data from the public URL
 URL_DATA = 'https://storage.data.gov.my/publicsafety/crime_district.parquet'
@@ -53,9 +77,8 @@ df_combined['date'] = df_combined['date'].dt.strftime('%Y-%m-%d')
 # Upload to Google Sheets
 def upload_to_google_sheets(dataframe, sheet_id, credentials_file, worksheet_name="SafeZoneGOV"):
     try:
-        # Correct usage of from_service_account_file
         creds = service_account.Credentials.from_service_account_file(
-            credentials_file, scopes=SCOPES  # Use scopes as a keyword argument
+            credentials_file, scopes=SCOPES
         )
         client = gspread.authorize(creds)
         sheet = client.open_by_key(sheet_id).worksheet(worksheet_name)
@@ -76,3 +99,6 @@ def upload_to_google_sheets(dataframe, sheet_id, credentials_file, worksheet_nam
 
 # Upload the preprocessed data to Google Sheets
 upload_to_google_sheets(df_combined, SHEET_ID, credentials_file)
+
+# Clean up the temporary credentials file
+os.remove(credentials_file)
