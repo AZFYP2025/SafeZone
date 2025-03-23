@@ -49,14 +49,14 @@ MALAYSIAN_DISTRICTS = [
 
 # Define special cases for states and districts separately
 SPECIAL_STATE_CASES = {
-    "kl": "w.p. kuala lumpur"
-    "kuala lumpur": "w.p. kuala lumpur",
+    "kl": "w.p. kuala lumpur",
+    "kuala lumpur": "w.p. kuala lumpur"
 }
 
 SPECIAL_DISTRICT_CASES = {
     "putrajaya": "w.p. putrajaya",
-    "sg buloh": "sg. buloh"
-    "sungai buloh": "sg. buloh",
+    "sg buloh": "sg. buloh",
+    "sungai buloh": "sg. buloh"
 }
 
 DISTRICT_TO_STATE = {
