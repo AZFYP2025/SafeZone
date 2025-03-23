@@ -60,17 +60,15 @@ df_filtered['district'] = df_filtered['district'].replace({
     'Seberang Perai Tengah': 'Seberang Perai',
     'Seberang Perai Utara': 'Seberang Perai',
     'Klang Selatan': 'Klang',
-    'Klang Utara': 'Klang'
+    'Klang Utara': 'Klang',
+    'Cameron Highland': 'Cameron Highlands'
 })
 
 # Group by district, category, and date, and sum the crimes
 df_combined = df_filtered.groupby(['district', 'category', 'date'], as_index=False)['crimes'].sum()
 
-# Add a placeholder 'state' column (if needed)
-df_combined['state'] = ''
-
 # Reorder columns to match your Google Sheet format
-df_combined = df_combined[['state', 'district', 'category', 'date', 'crimes']]
+df_combined = df_combined[['district', 'category', 'date', 'crimes']]
 
 # Format date for Google Sheets
 df_combined['date'] = df_combined['date'].dt.strftime('%Y-%m-%d')
