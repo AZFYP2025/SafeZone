@@ -2,7 +2,7 @@ name: Crime Data Preprocessing
 
 on:
   schedule:
-    - cron: '0 0 * * 1'  # Runs daily at midnight UTC
+    - cron: '0 0 * * 1'  # Runs every Monday at midnight UTC
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
@@ -25,6 +25,5 @@ jobs:
       - name: Run script
         env:
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
-          SHEET_ID: ${{ secrets.SHEET_ID }}
         run: |
           python preprocess_gov_data.py
