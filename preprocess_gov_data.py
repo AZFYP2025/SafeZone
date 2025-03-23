@@ -53,7 +53,7 @@ df['date'] = pd.to_datetime(df['date'])
 df = df[df['state'] != 'Malaysia']
 
 # Filter out rows where the district is 'All' (aggregated rows)
-df = df[df['district'] != 'All'
+df = df[df['district'] != 'All']
 
 # Filter the DataFrame to include only the required columns
 df_filtered = df[required_columns].copy()
