@@ -21,11 +21,9 @@ jobs:
       - name: Install Dependencies
         run: pip install pandas gspread google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client pyarrow
 
-      - name: Add Google Credentials
-        env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: Download Google Sheets Credentials
         run: |
-          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > google-credentials.json
+          echo '${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}' > google-credentials.json
 
       - name: Run Data Processing Script
         run: python preprocess_gov_data.py  # Make sure this matches your script filename
