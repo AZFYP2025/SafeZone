@@ -53,7 +53,10 @@ df_combined['date'] = df_combined['date'].dt.strftime('%Y-%m-%d')
 # Upload to Google Sheets
 def upload_to_google_sheets(dataframe, sheet_id, credentials_file, worksheet_name="SafeZoneGOV"):
     try:
-        creds = service_account.Credentials.from_service_account_file(credentials_file, SCOPES)
+        # Correct usage of from_service_account_file
+        creds = service_account.Credentials.from_service_account_file(
+            credentials_file, scopes=SCOPES  # Use scopes as a keyword argument
+        )
         client = gspread.authorize(creds)
         sheet = client.open_by_key(sheet_id).worksheet(worksheet_name)
         sheet.clear()
