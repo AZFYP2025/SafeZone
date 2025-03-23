@@ -28,6 +28,7 @@ jobs:
           CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}  # Store your credentials JSON as a GitHub secret
         run: |
           echo "$CREDENTIALS_JSON" > google-credentials.json
+          cat google-credentials.json  # Debugging: Print the file to verify its contents
 
       - name: Run preprocessing script
         run: |
