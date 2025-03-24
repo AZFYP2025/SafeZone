@@ -334,14 +334,13 @@ def generate_row_id(row):
         logging.error(f"Error generating row ID: {e}")
         return None
 
-# Extract State and District from Text using Malaya (primary) or hardcoded lists (fallback)
 def extract_location(text):
     try:
-        # Step 1: Use Malaya to extract locations
+        # Use Malaya to extract locations
         entities = entity_model.analyze(text)
         locations = [entity["text"] for entity in entities if entity["type"] == "location"]
 
-        # Step 2: If Malaya finds locations, use the first one
+        # If Malaya finds locations, use the first one
         if locations:
             location = locations[0]
             # Check if the location is a district or state
@@ -353,7 +352,7 @@ def extract_location(text):
                 # If location is not in the hardcoded lists, assume it's a district
                 return "Unknown", location
 
-        # Step 3: If Malaya doesn't find a location, fall back to hardcoded lists
+        # If Malaya doesn't find a location, fall back to hardcoded lists
         text_lower = text.lower()
         for abbrev, full_form in ABBREVIATIONS.items():
             text_lower = text_lower.replace(abbrev, full_form)
@@ -377,6 +376,23 @@ def extract_location(text):
 
     except Exception as e:
         logging.error(f"Error extracting location: {e}")
+        return "Unknown", "Unknown"
+
+def map_malay_to_type_and_category(topic):
+    try:
+        topic = topic.lower().strip()  # Ensure case insensitivity and remove extra spaces
+        if topic in ["stealing", "pencuri", "pencurian"]:
+            return "property", "theft"
+        elif topic in ["rape", "rogol", "perogol"]:
+            return "assault", "rape"
+        elif topic in ["robbery", "rompak", "rompakan"]:
+            return "property", "robbery"
+        elif topic in ["murder", "bunuh", "pembunuhan"]:
+            return "assault", "murder"
+        else:
+            return "Other", "Unknown"  # Default for unknown terms
+    except Exception as e:
+        logging.error(f"Error mapping crime type and category: {e}")
         return "Unknown", "Unknown"
 
 # Use Malaya to determine if a crime happened
@@ -440,10 +456,14 @@ def process_and_upload():
         crime_df = new_df[new_df["Is Crime"]]
 
         # Extract state and district
-        crime_df[["State", "District"]] = crime_df["Tweet Text"].apply(lambda x: extract_location(x)).apply(pd.Series)
+        location_data = crime_df["Tweet Text"].apply(extract_location)
+        crime_df["State"] = location_data.apply(lambda x: x[0])  # Extract state
+        crime_df["District"] = location_data.apply(lambda x: x[1])  # Extract district
 
         # Map Malay crime terms to Type and Category
-        crime_df[["Category", "Type"]] = crime_df["Main Topic"].apply(lambda x: pd.Series(map_malay_to_type_and_category(x)))
+        crime_type_data = crime_df["Main Topic"].apply(map_malay_to_type_and_category)
+        crime_df["Category"] = crime_type_data.apply(lambda x: x[0])  # Extract category
+        crime_df["Type"] = crime_type_data.apply(lambda x: x[1])  # Extract type
 
         # Log the processed DataFrame
         logging.info(f"Processed DataFrame columns: {crime_df.columns.tolist()}")
@@ -474,11 +494,3 @@ def process_and_upload():
         logging.info(f"Added {len(crime_df)} new crime records to Firebase!")
     except Exception as e:
         logging.error(f"Error in process_and_upload: {e}")
-
-# Main execution
-if __name__ == "__main__":
-    try:
-        initialize_firebase()
-        process_and_upload()
-    except Exception as e:
-        logging.error(f"Script failed: {e}")
