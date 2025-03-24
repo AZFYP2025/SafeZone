@@ -410,7 +410,7 @@ def is_crime_incident(text):
 
         # Perform sentiment analysis
         sentiment = sentiment_model.predict(text)
-        is_factual = sentiment == "neutral"  # Factual reports are often neutral
+        is_factual = sentiment == "negative" 
 
         # Determine if it's likely a crime incident
         if has_location and has_date and is_factual:
