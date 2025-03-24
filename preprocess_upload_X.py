@@ -494,3 +494,11 @@ def process_and_upload():
         logging.info(f"Added {len(crime_df)} new crime records to Firebase!")
     except Exception as e:
         logging.error(f"Error in process_and_upload: {e}")
+        
+# Main execution
+if __name__ == "__main__":
+    try:
+        initialize_firebase()
+        process_and_upload()
+    except Exception as e:
+        logging.error(f"Script failed: {e}")
