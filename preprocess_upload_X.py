@@ -455,6 +455,11 @@ def process_and_upload():
         # Filter only rows where a crime incident is detected
         crime_df = new_df[new_df["Is Crime"]]
 
+        # Check if crime_df is empty
+        if crime_df.empty:
+            logging.info("No crime incidents detected in the new data.")
+            return
+
         # Extract state and district
         location_data = crime_df["Tweet Text"].apply(extract_location)
         crime_df["State"] = location_data.apply(lambda x: x[0])  # Extract state
@@ -467,6 +472,7 @@ def process_and_upload():
 
         # Log the processed DataFrame
         logging.info(f"Processed DataFrame columns: {crime_df.columns.tolist()}")
+        logging.info(f"Number of crime incidents detected: {len(crime_df)}")
         logging.info(f"Processed DataFrame first row: {crime_df.iloc[0].to_dict()}")
 
         # Upload data to Firebase
