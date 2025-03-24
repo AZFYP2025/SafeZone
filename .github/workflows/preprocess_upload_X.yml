@@ -1,0 +1,38 @@
+name: X Fetch & Process 
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"  # Runs every Monday at midnight UTC
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # Specify the Python version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download Firebase Credentials
+        run: |
+          echo '${{ secrets.FIREBASE_CREDENTIALS }}' > firebase-credentials.json
+
+      - name: Verify Firebase Credentials
+        run: |
+          cat firebase-credentials.json
+
+      - name: Download Google Sheets Credentials
+        run: |
+          echo '${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}' > google-credentials.json
+
+          python preprocess_upload_X.py  # Replace with the name of your Python script
