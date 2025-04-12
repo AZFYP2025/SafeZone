@@ -12,10 +12,10 @@ from firebase_admin import credentials
 # Initialize FastAPI
 app = FastAPI()
 
-# Add root endpoint
+# Root route to return a friendly message
 @app.get("/")
 def read_root():
-    return {"message": "FastAPI is running on Fly.io 🚀"}
+    return {"message": "FastAPI is running on Render 🚀"}
 
 # Initialize Firebase app if not already initialized
 if not firebase_admin._apps:
