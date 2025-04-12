@@ -4,6 +4,9 @@ google-auth
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
-malaya
-torch
-bs4
+fastapi
+uvicorn
+xgboost
+scikit-learn
+numpy
+matplotlib
