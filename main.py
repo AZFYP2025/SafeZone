@@ -9,6 +9,10 @@ from firebase_admin import db
 import firebase_admin
 from firebase_admin import credentials
 
+@app.get("/")
+def read_root():
+    return {"message": "FastAPI is running on Fly.io 🚀"}
+
 # Initialize Firebase app if not already initialized
 if not firebase_admin._apps:
     cred = credentials.Certificate("firebase-credentials.json")
