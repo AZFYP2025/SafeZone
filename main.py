@@ -9,6 +9,10 @@ from firebase_admin import db
 import firebase_admin
 from firebase_admin import credentials
 
+# Initialize FastAPI
+app = FastAPI()
+
+# Add root endpoint
 @app.get("/")
 def read_root():
     return {"message": "FastAPI is running on Fly.io 🚀"}
@@ -20,9 +24,10 @@ if not firebase_admin._apps:
         'databaseURL': "https://safezone-660a9-default-rtdb.asia-southeast1.firebasedatabase.app/"
     })
 
-app = FastAPI()
+# Load the model
 model = pickle.load(open("model.pkl", "rb"))
 
+# Fetch data from Firebase
 def fetch_data_from_firebase(path: str) -> list:
     ref = db.reference(path)
     data = ref.get()
