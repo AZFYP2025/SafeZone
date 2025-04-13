@@ -296,7 +296,7 @@ def fetch_google_sheets():
 
             # Malay Crime Terms Mapping
             crime_mapping = {
-                "curi": "stealing", "pencuri": "stealing", "pencurian": "stealing",
+                "curi": "theft", "pencuri": "theft", "pencurian": "theft",
                 "rogol": "rape", "perogol": "rape", "merogol": "rape",
                 "rompak": "robbery", "merompak": "robbery", "rompakan": "robbery",
                 "bunuh": "murder", "membunuh": "murder", "pembunuhan": "murder", "terbunuh": "murder"
